@@ -1,0 +1,25 @@
+[
+  {
+    "slug": "fortinet-fortinet-fortigate-200g",
+    "name": "Fortinet FortiGate 200G",
+    "brand": "Fortinet ",
+    "category": "Switch",
+    "categorySlug": "switch",
+    "badges": [
+      "Admin",
+      "Catalog"
+    ],
+    "summary": "thêm thử lại nữa",
+    "specs": [
+      "Tư vấn theo hiện trạng thực tế",
+      "Chọn cấu hình theo số user/băng thông",
+      "Có thể kết hợp trong gói thi công"
+    ],
+    "applications": [
+      "Hạ tầng mạng doanh nghiệp",
+      "Dự án cần tư vấn cấu hình",
+      "Liên hệ báo giá"
+    ],
+    "imageUrl": ""
+  }
+]
