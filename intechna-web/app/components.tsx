@@ -106,10 +106,18 @@ export function CTA() {
       return
     }
     setStatus('submitting')
-    // Simulate API request
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setStatus('success')
-    setFormData({ name: '', phone: '', email: '', note: '' })
+    try {
+      const res = await fetch('/api/contact', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(formData),
+      })
+      if (!res.ok) throw new Error('Server error')
+      setStatus('success')
+      setFormData({ name: '', phone: '', email: '', note: '' })
+    } catch {
+      setStatus('error')
+    }
   }
 
   return (

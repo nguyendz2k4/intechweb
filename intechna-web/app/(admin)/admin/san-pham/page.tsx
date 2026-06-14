@@ -1,4 +1,3 @@
-import { productList } from '@/app/products-data'
 import { ProductAdminClient } from './ProductAdminClient'
 
 export default function AdminProductsPage() {
@@ -6,9 +5,9 @@ export default function AdminProductsPage() {
     <>
       <section className="admin-title">
         <h1>Quản lý sản phẩm</h1>
-        <p>Thêm model, chỉnh hãng, danh mục và mô tả sản phẩm. Catalog hiện có {productList.length} sản phẩm.</p>
+        <p>Thêm, sửa, xóa sản phẩm trong catalog. Dữ liệu lưu trực tiếp vào database.</p>
       </section>
-      <ProductAdminClient products={productList} />
+      <ProductAdminClient />
     </>
   )
 }

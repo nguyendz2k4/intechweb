@@ -1,11 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Breadcrumbs, CTA, FAQSection } from '@/app/components'
-import { productList } from '@/app/products-data'
+import { getProducts } from '@/app/lib/db/queries'
 import { CatalogFilter } from './CatalogFilter'
 
-const categories = Array.from(new Set(productList.map((product) => product.categorySlug)))
-const brands = Array.from(new Set(productList.map((product) => product.brand))).sort()
 function slugify(value: string) {
   return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
@@ -16,7 +14,11 @@ export const metadata: Metadata = {
   alternates: { canonical: '/san-pham/catalog' },
 }
 
-export default function CatalogPage() {
+export default async function CatalogPage() {
+  const productList = await getProducts()
+  const categories = Array.from(new Set(productList.map((p) => p.categorySlug)))
+  const brands = Array.from(new Set(productList.map((p) => p.brand))).sort()
+
   return (
     <main>
       <Breadcrumbs current="Catalog sản phẩm" />
@@ -31,10 +33,11 @@ export default function CatalogPage() {
           </div>
           <ul className="mini-list">{brands.map((brand) => <li key={brand}><Link href={`/thuong-hieu/${slugify(brand)}`}>{brand}</Link></li>)}</ul>
         </div>
-        <CatalogFilter products={productList} />
+        <CatalogFilter products={productList as Parameters<typeof CatalogFilter>[0]['products']} />
       </section>
       <FAQSection />
       <CTA />
     </main>
   )
 }
+
