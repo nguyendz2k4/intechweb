@@ -76,4 +76,3 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     </main>
   )
 }
-

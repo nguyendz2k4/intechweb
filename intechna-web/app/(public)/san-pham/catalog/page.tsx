@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Breadcrumbs, CTA, FAQSection } from '@/app/components'
 import { getProducts } from '@/app/lib/db/queries'
+import { type Product as CatalogProduct } from '@/app/products-data'
 import { CatalogFilter } from './CatalogFilter'
 
 function slugify(value: string) {
@@ -15,7 +16,15 @@ export const metadata: Metadata = {
 }
 
 export default async function CatalogPage() {
-  const productList = await getProducts()
+  const productList = (await getProducts()).map((product) => ({
+    ...product,
+    summary: product.summary ?? '',
+    badges: product.badges ?? [],
+    specs: product.specs ?? [],
+    applications: product.applications ?? [],
+    imageUrl: product.imageUrl ?? '',
+    datasheetUrl: product.datasheetUrl ?? '',
+  })) satisfies CatalogProduct[]
   const categories = Array.from(new Set(productList.map((p) => p.categorySlug)))
   const brands = Array.from(new Set(productList.map((p) => p.brand))).sort()
 
@@ -33,11 +42,10 @@ export default async function CatalogPage() {
           </div>
           <ul className="mini-list">{brands.map((brand) => <li key={brand}><Link href={`/thuong-hieu/${slugify(brand)}`}>{brand}</Link></li>)}</ul>
         </div>
-        <CatalogFilter products={productList as Parameters<typeof CatalogFilter>[0]['products']} />
+          <CatalogFilter products={productList} />
       </section>
       <FAQSection />
       <CTA />
     </main>
   )
 }
-

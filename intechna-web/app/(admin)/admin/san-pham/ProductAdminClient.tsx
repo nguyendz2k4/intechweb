@@ -72,7 +72,7 @@ export function ProductAdminClient() {
   }
 
   function editProduct(product: Product) {
-    setDraft({ slug: product.slug, name: product.name, brand: product.brand, category: product.category, categorySlug: product.categorySlug, summary: product.summary, imageUrl: product.imageUrl || '', datasheetUrl: product.datasheetUrl || '' })
+    setDraft({ slug: product.slug, name: product.name, brand: product.brand, category: product.category, categorySlug: product.categorySlug, summary: product.summary || '', imageUrl: product.imageUrl || '', datasheetUrl: product.datasheetUrl || '' })
   }
 
   return (

@@ -19,10 +19,6 @@ export default function AdminPage() {
       <section className="admin-grid">
         {stats.map((item) => <article className="admin-card" key={item.label}><span className="admin-pill">{item.label}</span><h2>{item.value}</h2><p>Quản lý và chuẩn hóa dữ liệu {item.label.toLowerCase()}.</p><div className="admin-actions"><Link className="admin-btn primary" href={item.href}>Mở quản lý</Link></div></article>)}
       </section>
-      <section className="admin-card" style={{ marginTop: 18 }}>
-        <h2>Ghi chú triển khai</h2>
-        <p className="admin-note">Để an toàn khi public website, khu vực /admin cần thêm đăng nhập trước khi deploy thật. Em sẽ làm auth + lưu DB/file JSON ở bước sau nếu Ông chủ duyệt.</p>
-      </section>
     </>
   )
 }

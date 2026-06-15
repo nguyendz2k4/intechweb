@@ -121,8 +121,8 @@ p { margin-bottom: 0; }
 }
 
 .reveal {
-  opacity: 0;
-  transform: translateY(32px) scale(0.97);
+  opacity: 1;
+  transform: none;
   transition: opacity 0.8s var(--ease-spring), transform 0.8s var(--ease-spring);
   will-change: transform, opacity;
 }

@@ -22,7 +22,13 @@ export default async function NewsPage() {
           <p className="lead">Các checklist và gợi ý thực tế giúp doanh nghiệp chuẩn bị tốt hơn trước khi triển khai hoặc nâng cấp hệ thống.</p>
         </div>
         <div className="cards">
-          {posts.map((post) => (
+          {posts.length === 0 ? (
+            <article className="card">
+              <p className="eyebrow">Chưa có bài viết</p>
+              <h2>Kho nội dung đang trống</h2>
+              <p>Thêm bài viết trong admin để trang tin tức hiển thị nội dung thật.</p>
+            </article>
+          ) : posts.map((post) => (
             <article className="card" key={post.slug}>
               <h2>{post.title}</h2>
               <p>{post.description}</p>
@@ -34,4 +40,3 @@ export default async function NewsPage() {
     </main>
   )
 }
-

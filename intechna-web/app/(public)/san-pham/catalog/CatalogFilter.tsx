@@ -26,6 +26,8 @@ export function CatalogFilter({ products }: { products: Product[] }) {
     const matchCategory = category === 'all' || product.categorySlug === category
     return matchQuery && matchBrand && matchCategory
   })
+  const hasProducts = allProducts.length === 0
+  const emptyState = query || brand !== 'all' || category !== 'all'
 
   return (
     <>
@@ -34,10 +36,22 @@ export function CatalogFilter({ products }: { products: Product[] }) {
         <label><span>Hãng</span><select value={brand} onChange={(event) => setBrand(event.target.value)}><option value="all">Tất cả hãng</option>{brands.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
         <label><span>Danh mục</span><select value={category} onChange={(event) => setCategory(event.target.value)}><option value="all">Tất cả danh mục</option>{categories.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
       </div>
-      <div className="catalog-summary"><strong>{filtered.length}</strong> / {allProducts.length} sản phẩm phù hợp{(query || brand !== 'all' || category !== 'all') && <button type="button" onClick={() => { setQuery(''); setBrand('all'); setCategory('all') }}>Xóa lọc</button>}</div>
+      <div className="catalog-summary"><strong>{filtered.length}</strong> / {allProducts.length} sản phẩm phù hợp{emptyState && <button type="button" onClick={() => { setQuery(''); setBrand('all'); setCategory('all') }}>Xóa lọc</button>}</div>
       <div className="product-scroll-panel" aria-label="Danh sách sản phẩm có thể cuộn">
         <div className="cards product-scroll-grid">
-          {filtered.map((product) => (
+          {hasProducts ? (
+            <article className="card product-card">
+              <p className="eyebrow">Catalog trống</p>
+              <h2>Chưa có dữ liệu sản phẩm</h2>
+              <p>Thêm sản phẩm trong admin để catalog và bộ lọc hiển thị nội dung thật.</p>
+            </article>
+          ) : filtered.length === 0 ? (
+            <article className="card product-card">
+              <p className="eyebrow">Không có kết quả</p>
+              <h2>Không tìm thấy sản phẩm phù hợp</h2>
+              <p>Thử xoá bộ lọc hoặc nhập lại model/hãng/danh mục.</p>
+            </article>
+          ) : filtered.map((product) => (
             <article className="card product-card" key={product.slug}>
               {product.imageUrl ? <img className="product-thumb" src={product.imageUrl} alt={product.name} /> : <div className="product-thumb placeholder"><span>{product.brand.slice(0, 2).toUpperCase()}</span></div>}
               <p className="eyebrow">{product.brand} / {product.category}</p>
