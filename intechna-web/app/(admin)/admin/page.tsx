@@ -1,15 +1,25 @@
 import Link from 'next/link'
 import { posts, servicePages, solutionPages } from '@/app/data'
 import { productList } from '@/app/products-data'
+import { getWarrantyRecords } from '@/app/lib/db/queries'
 
-const stats = [
-  { label: 'Sản phẩm catalog', value: productList.length, href: '/admin/san-pham' },
-  { label: 'Bài viết', value: posts.length, href: '/admin/noi-dung' },
-  { label: 'Landing page dịch vụ', value: servicePages.length, href: '/admin/dich-vu' },
-  { label: 'Trang giải pháp', value: solutionPages.length, href: '/admin/dich-vu' },
-]
+export default async function AdminPage() {
+  let warrantyCount = 0
+  try {
+    const w = await getWarrantyRecords()
+    warrantyCount = w.length
+  } catch {
+    // Fallback if DB is down or connection not ready
+  }
 
-export default function AdminPage() {
+  const stats = [
+    { label: 'Sản phẩm catalog', value: productList.length, href: '/admin/san-pham' },
+    { label: 'Bài viết', value: posts.length, href: '/admin/noi-dung' },
+    { label: 'Kích hoạt bảo hành', value: warrantyCount, href: '/admin/bao-hanh' },
+    { label: 'Landing page dịch vụ', value: servicePages.length, href: '/admin/dich-vu' },
+    { label: 'Trang giải pháp', value: solutionPages.length, href: '/admin/dich-vu' },
+  ]
+
   return (
     <>
       <section className="admin-title">

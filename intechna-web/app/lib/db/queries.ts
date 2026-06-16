@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq, like, desc } from 'drizzle-orm'
 import { db } from './index'
 import {
   products, posts, services, warranty,
@@ -82,7 +82,19 @@ export async function deleteService(slug: string) {
 
 // ── Warranty ──────────────────────────────────────────────────
 export async function getWarrantyRecords() {
-  return db.select().from(warranty).orderBy(warranty.id)
+  const rows = await db.select().from(warranty).orderBy(warranty.id)
+  
+  const now = new Date()
+  const offset = now.getTimezoneOffset() * 60000
+  const localDateStr = new Date(now.getTime() - offset).toISOString().split('T')[0]
+
+  return rows.map((r) => {
+    let currentStatus = r.status || 'Còn bảo hành'
+    if (currentStatus === 'Còn bảo hành' && r.warrantyUntil && localDateStr > r.warrantyUntil) {
+      currentStatus = 'Hết hạn'
+    }
+    return { ...r, status: currentStatus }
+  })
 }
 
 export async function searchWarranty(keyword: string) {
@@ -105,3 +117,30 @@ export async function upsertWarranty(data: NewWarrantyRecord) {
   }
   return data
 }
+
+export async function getNextWarrantyCode(year: number) {
+  const prefix = `INTECH-${year}-`
+  const rows = await db
+    .select({ code: warranty.code })
+    .from(warranty)
+    .where(like(warranty.code, `${prefix}%`))
+    .orderBy(desc(warranty.code))
+    .limit(1)
+
+  if (rows.length === 0) {
+    return `${prefix}0001`
+  }
+
+  const lastCode = rows[0].code
+  const parts = lastCode.split('-')
+  const numPart = parts[parts.length - 1]
+  const nextNum = parseInt(numPart, 10) + 1
+  const paddedNum = String(nextNum).padStart(4, '0')
+  return `${prefix}${paddedNum}`
+}
+
+export async function createWarranty(data: NewWarrantyRecord) {
+  await db.insert(warranty).values(data)
+  return data
+}
+

@@ -63,6 +63,9 @@
 /* ── Reset & Base ───────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+button, input, select, textarea, option {
+  font-family: inherit;
+}
 
 html {
   scroll-behavior: smooth;
@@ -232,8 +235,8 @@ p { margin-bottom: 0; }
   padding: 8px 16px;
   border-radius: 999px;
   color: var(--muted);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   text-decoration: none;
   transition: color 0.2s ease;
   white-space: nowrap;
@@ -249,7 +252,7 @@ p { margin-bottom: 0; }
   z-index: -1;
   opacity: 0;
   transform: scale(0.92);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   will-change: opacity, transform;
 }
 
@@ -260,6 +263,7 @@ p { margin-bottom: 0; }
 .navbar__link:hover::before {
   opacity: 0.5;
   transform: scale(0.96);
+  box-shadow: 0 2px 8px rgba(37, 127, 164, 0.08);
 }
 
 .navbar__link--active {
@@ -269,6 +273,7 @@ p { margin-bottom: 0; }
 .navbar__link--active::before {
   opacity: 1 !important;
   transform: scale(1) !important;
+  box-shadow: 0 4px 12px rgba(37, 127, 164, 0.12);
 }
 
 @keyframes dotPop {
@@ -795,6 +800,7 @@ input, textarea, select {
   color: var(--ink);
   font: inherit;
   font-size: 15px;
+  font-weight: 500;
   background: var(--soft);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
@@ -1169,7 +1175,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, summary:focus
 /* ── Responsive — Tablet (≤1080px) ──────────────────────── */
 @media (max-width: 1080px) {
   .navbar__nav { gap: 2px; }
-  .navbar__link { padding: 7px 9px; font-size: 13px; }
+  .navbar__link { padding: 7px 9px; font-size: 14px; }
   .cards { grid-template-columns: repeat(2, 1fr); }
   .timeline-grid { grid-template-columns: repeat(2, 1fr); }
 }
@@ -1447,7 +1453,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, summary:focus
 .admin-form { display: grid; gap: 14px; }
 .admin-form label { display: grid; gap: 7px; font-weight: 900; }
 .admin-form span { font-size: 13px; color: #0369a1; text-transform: uppercase; letter-spacing: .08em; }
-.admin-form input, .admin-form textarea, .admin-form select { width: 100%; border: 1px solid rgba(20,20,20,.12); border-radius: 14px; padding: 13px 14px; background: #fff; font: inherit; }
+.admin-form input, .admin-form textarea, .admin-form select { width: 100%; border: 1px solid rgba(20,20,20,.12); border-radius: 14px; padding: 13px 14px; background: #fff; font: inherit; font-weight: 500; }
 .admin-form textarea { min-height: 110px; resize: vertical; }
 .admin-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
 .admin-table th { text-align: left; color: #0369a1; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }

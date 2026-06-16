@@ -6,6 +6,7 @@ const adminNav = [
   ['Sản phẩm', '/admin/san-pham'],
   ['Nội dung', '/admin/noi-dung'],
   ['Dịch vụ', '/admin/dich-vu'],
+  ['Bảo hành', '/admin/bao-hanh'],
   ['Xem website', '/'],
 ] as const
 
