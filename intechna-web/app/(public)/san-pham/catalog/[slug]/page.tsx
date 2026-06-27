@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Breadcrumbs, CTA } from '@/app/components'
 import { siteConfig } from '@/app/data'
 import { getProductBySlug, getProducts } from '@/app/lib/db/queries'
+import { ProductPlaceholder } from '@/app/ProductPlaceholder'
 
 export async function generateStaticParams() {
   const all = await getProducts()
@@ -42,9 +43,16 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
         <div className="product-visual">
-          {product.imageUrl
-            ? <img className="product-detail-image" src={product.imageUrl} alt={product.name} />
-            : <><span>{product.brand}</span><strong>{product.name}</strong></>}
+          {product.imageUrl ? (
+            <img className="product-detail-image" src={product.imageUrl} alt={product.name} />
+          ) : (
+            <ProductPlaceholder 
+              brand={product.brand} 
+              categorySlug={product.categorySlug} 
+              name={product.name} 
+              className="product-detail-image"
+            />
+          )}
         </div>
       </section>
       <section className="section surface">

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import type { Product } from '@/app/products-data'
+import { ProductPlaceholder } from '@/app/ProductPlaceholder'
 
 function unique(values: string[]) {
   return Array.from(new Set(values)).sort()
@@ -10,7 +11,12 @@ function unique(values: string[]) {
 
 export function CatalogFilter({ products }: { products: Product[] }) {
   const [adminProducts, setAdminProducts] = useState<Product[]>([])
-  const allProducts = useMemo(() => [...adminProducts, ...products], [adminProducts, products])
+  const allProducts = useMemo(() => {
+    const map = new Map<string, Product>()
+    products.forEach((p) => map.set(p.slug, p))
+    adminProducts.forEach((p) => map.set(p.slug, p))
+    return Array.from(map.values())
+  }, [adminProducts, products])
   const brands = useMemo(() => unique(allProducts.map((product) => product.brand)), [allProducts])
   const categories = useMemo(() => unique(allProducts.map((product) => product.categorySlug)), [allProducts])
   const [query, setQuery] = useState('')
@@ -53,7 +59,16 @@ export function CatalogFilter({ products }: { products: Product[] }) {
             </article>
           ) : filtered.map((product) => (
             <article className="card product-card" key={product.slug}>
-              {product.imageUrl ? <img className="product-thumb" src={product.imageUrl} alt={product.name} /> : <div className="product-thumb placeholder"><span>{product.brand.slice(0, 2).toUpperCase()}</span></div>}
+              {product.imageUrl ? (
+                <img className="product-thumb" src={product.imageUrl} alt={product.name} />
+              ) : (
+                <ProductPlaceholder 
+                  brand={product.brand} 
+                  categorySlug={product.categorySlug} 
+                  name={product.name} 
+                  className="product-thumb"
+                />
+              )}
               <p className="eyebrow">{product.brand} / {product.category}</p>
               <h2>{product.name}</h2>
               <p>{product.summary}</p>

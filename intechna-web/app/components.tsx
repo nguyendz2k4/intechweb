@@ -171,6 +171,7 @@ export function CTA() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   style={{ background: 'var(--white)', border: '1px solid var(--blue-mid)' }}
+                  suppressHydrationWarning
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -183,6 +184,7 @@ export function CTA() {
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   style={{ background: 'var(--white)', border: '1px solid var(--blue-mid)' }}
+                  suppressHydrationWarning
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -194,6 +196,7 @@ export function CTA() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   style={{ background: 'var(--white)', border: '1px solid var(--blue-mid)' }}
+                  suppressHydrationWarning
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -205,6 +208,7 @@ export function CTA() {
                   value={formData.note}
                   onChange={(e) => setFormData({ ...formData, note: e.target.value })}
                   style={{ background: 'var(--white)', border: '1px solid var(--blue-mid)', resize: 'none' }}
+                  suppressHydrationWarning
                 />
               </div>
 
@@ -220,6 +224,7 @@ export function CTA() {
                 className="btn primary" 
                 disabled={status === 'submitting'}
                 style={{ width: '100%', marginTop: '8px', cursor: status === 'submitting' ? 'not-allowed' : 'pointer', opacity: status === 'submitting' ? 0.7 : 1 }}
+                suppressHydrationWarning
               >
                 {status === 'submitting' ? 'Đang gửi thông tin...' : 'Gửi thông tin liên hệ'}
               </button>
