@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Product } from '@/app/products-data'
 import { ProductPlaceholder } from '@/app/ProductPlaceholder'
 
@@ -10,20 +10,12 @@ function unique(values: string[]) {
 }
 
 export function CatalogFilter({ products }: { products: Product[] }) {
-  const [adminProducts, setAdminProducts] = useState<Product[]>([])
-  const allProducts = useMemo(() => {
-    const map = new Map<string, Product>()
-    products.forEach((p) => map.set(p.slug, p))
-    adminProducts.forEach((p) => map.set(p.slug, p))
-    return Array.from(map.values())
-  }, [adminProducts, products])
+  const allProducts = products
   const brands = useMemo(() => unique(allProducts.map((product) => product.brand)), [allProducts])
   const categories = useMemo(() => unique(allProducts.map((product) => product.categorySlug)), [allProducts])
   const [query, setQuery] = useState('')
   const [brand, setBrand] = useState('all')
   const [category, setCategory] = useState('all')
-
-  useEffect(() => { fetch('/api/admin/products').then((res) => res.json()).then(setAdminProducts).catch(() => setAdminProducts([])) }, [])
 
   const filtered = allProducts.filter((product) => {
     const q = query.trim().toLowerCase()
