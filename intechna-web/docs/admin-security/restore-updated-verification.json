@@ -1,0 +1,86 @@
+{
+  "verifiedAt": "2026-10-13T16:12:16.824Z",
+  "environment": "confirmed test source, separate temporary QA targets",
+  "reports": [
+    {
+      "archiveSchema": 1,
+      "tables": {
+        "products": {
+          "rows": 498,
+          "canonicalHashMatched": true,
+          "sequenceMatched": true
+        },
+        "posts": {
+          "rows": 5,
+          "canonicalHashMatched": true,
+          "sequenceMatched": true
+        },
+        "services": {
+          "rows": 0,
+          "canonicalHashMatched": true,
+          "sequenceMatched": true
+        },
+        "warranty": {
+          "rows": 3,
+          "canonicalHashMatched": true,
+          "sequenceMatched": true
+        },
+        "contact_submissions": {
+          "rows": 0,
+          "canonicalHashMatched": true,
+          "sequenceMatched": true
+        },
+        "security_admin_credentials": {
+          "rows": 0,
+          "canonicalHashMatched": true,
+          "sequenceMatched": true
+        }
+      },
+      "statusConstraints": 4,
+      "securityStateEmpty": true,
+      "mediaFiles": 2,
+      "nonemptyRestoreRefused": true,
+      "restoredMfaDecryptable": false
+    },
+    {
+      "archiveSchema": 2,
+      "tables": {
+        "products": {
+          "rows": 498,
+          "canonicalHashMatched": true,
+          "sequenceMatched": true
+        },
+        "posts": {
+          "rows": 5,
+          "canonicalHashMatched": true,
+          "sequenceMatched": true
+        },
+        "services": {
+          "rows": 1,
+          "canonicalHashMatched": true,
+          "sequenceMatched": true
+        },
+        "warranty": {
+          "rows": 3,
+          "canonicalHashMatched": true,
+          "sequenceMatched": true
+        },
+        "contact_submissions": {
+          "rows": 0,
+          "canonicalHashMatched": true,
+          "sequenceMatched": true
+        },
+        "security_admin_credentials": {
+          "rows": 1,
+          "canonicalHashMatched": true,
+          "sequenceMatched": true
+        }
+      },
+      "statusConstraints": 4,
+      "securityStateEmpty": true,
+      "mediaFiles": 2,
+      "nonemptyRestoreRefused": true,
+      "restoredMfaDecryptable": true
+    }
+  ]
+}

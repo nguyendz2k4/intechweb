@@ -19,6 +19,10 @@ dist/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*
+!.env.example
+**/data/owner/
+**/backups/
 
 # 5. Logs & Debug
 npm-debug.log*

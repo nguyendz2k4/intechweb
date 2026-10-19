@@ -1,34 +1,88 @@
 import Link from 'next/link'
-import { posts, servicePages, solutionPages } from '@/app/data'
-import { productList } from '@/app/products-data'
-import { getWarrantyRecords } from '@/app/lib/db/queries'
+import { getAdminCounts } from '@/app/lib/db/queries'
+import { requireAdminPage } from '@/app/lib/admin-auth-page'
+
+const sections = [
+  {
+    key: 'products',
+    label: 'Sản phẩm',
+    href: '/admin/san-pham',
+    description: 'Thông tin thiết bị, ảnh và datasheet.',
+  },
+  {
+    key: 'posts',
+    label: 'Bài viết',
+    href: '/admin/noi-dung',
+    description: 'Bài viết đã xuất bản và bản nháp.',
+  },
+  {
+    key: 'services',
+    label: 'Dịch vụ',
+    href: '/admin/dich-vu',
+    description: 'Nội dung dịch vụ lưu trong CMS.',
+  },
+  {
+    key: 'warranty',
+    label: 'Hồ sơ bảo hành',
+    href: '/admin/bao-hanh',
+    description: 'Thiết bị và bảo hành đã kích hoạt.',
+  },
+  {
+    key: 'contacts',
+    label: 'Yêu cầu liên hệ',
+    href: '/admin/lien-he',
+    description: 'Yêu cầu từ khách hàng cần tiếp nhận.',
+  },
+] as const
 
 export default async function AdminPage() {
-  let warrantyCount = 0
+  const session = await requireAdminPage()
+  let counts: Record<string, number> = {}
+  let failed = false
   try {
-    const w = await getWarrantyRecords()
-    warrantyCount = w.length
+    counts = await getAdminCounts(session.permissions)
   } catch {
-    // Fallback if DB is down or connection not ready
+    failed = true
   }
-
-  const stats = [
-    { label: 'Sản phẩm catalog', value: productList.length, href: '/admin/san-pham' },
-    { label: 'Bài viết', value: posts.length, href: '/admin/noi-dung' },
-    { label: 'Kích hoạt bảo hành', value: warrantyCount, href: '/admin/bao-hanh' },
-    { label: 'Landing page dịch vụ', value: servicePages.length, href: '/admin/dich-vu' },
-    { label: 'Trang giải pháp', value: solutionPages.length, href: '/admin/dich-vu' },
-  ]
 
   return (
     <>
       <section className="admin-title">
-        <h1>Dashboard quản trị Intech</h1>
-        <p>Trang nội bộ để quản lý sản phẩm, bài viết, dịch vụ và giải pháp. Bản hiện tại là giao diện quản trị + nhập liệu nháp; bước tiếp theo có thể nối database/API để lưu thật.</p>
+        <p className="admin-eyebrow">Không gian quản trị</p>
+        <h1>Tổng quan website</h1>
+        <p>
+          Quản lý nội dung và yêu cầu khách hàng từ một nơi. Số liệu bên dưới lấy trực tiếp từ cơ sở
+          dữ liệu theo quyền của tài khoản.
+        </p>
       </section>
-      <section className="admin-grid">
-        {stats.map((item) => <article className="admin-card" key={item.label}><span className="admin-pill">{item.label}</span><h2>{item.value}</h2><p>Quản lý và chuẩn hóa dữ liệu {item.label.toLowerCase()}.</p><div className="admin-actions"><Link className="admin-btn primary" href={item.href}>Mở quản lý</Link></div></article>)}
+      {failed && (
+        <p className="admin-note error" role="alert">
+          Không tải được số liệu từ cơ sở dữ liệu. Kiểm tra kết nối và cấu hình database, sau đó tải
+          lại trang.
+        </p>
+      )}
+      <section className="admin-grid" aria-label="Số liệu CMS">
+        {sections
+          .filter((item) =>
+            session.permissions.some((permission) => permission === `${item.key}:read`),
+          )
+          .map((item) => (
+            <article className="admin-card" key={item.key}>
+              <h2>{item.label}</h2>
+              <span className="admin-stat">
+                {failed ? '—' : (counts[item.key]?.toLocaleString('vi-VN') ?? '—')}
+              </span>
+              <p>{item.description}</p>
+              <Link className="admin-stat-link" href={item.href}>
+                Mở quản lý <span aria-hidden="true">→</span>
+              </Link>
+            </article>
+          ))}
       </section>
+      <p className="admin-note admin-dashboard-note">
+        CMS cập nhật nội dung trong mẫu giao diện hiện tại. Số lượng sản phẩm và bài viết bao gồm cả
+        bản nháp trong cơ sở dữ liệu.
+      </p>
     </>
   )
 }

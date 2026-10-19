@@ -1,0 +1,62 @@
+{
+  "verifiedAt": "2026-10-14T04:41:49.935Z",
+  "environment": "confirmed test DB, loopback Next development",
+  "results": [
+    {
+      "name": "logout revokes copied cookie, other session survives",
+      "passed": true
+    },
+    {
+      "name": "new service draft returns404",
+      "passed": true
+    },
+    {
+      "name": "published service detail and sitemap use CMS content",
+      "passed": true
+    },
+    {
+      "name": "large Vietnamese service persisted and oversized body rejected",
+      "passed": true
+    },
+    {
+      "name": "publishing service refreshes quote and article links/content",
+      "passed": true
+    },
+    {
+      "name": "draft service links removed from quote and article",
+      "passed": true
+    },
+    {
+      "name": "draft override hides static fallback and sitemap",
+      "passed": true
+    },
+    {
+      "name": "deleting static override restores original service",
+      "passed": true
+    },
+    {
+      "name": "deleting new service removes public page",
+      "passed": true
+    },
+    {
+      "name": "password change persisted and old cookie/password rejected",
+      "passed": true
+    },
+    {
+      "name": "login per-account burst quota enforced",
+      "passed": true
+    },
+    {
+      "name": "MFA persisted, enrollment revoked sessions, code replay rejected",
+      "passed": true
+    },
+    {
+      "name": "MFA DB value is encrypted",
+      "passed": true
+    },
+    {
+      "name": "health probe requires token and confirms schema/runtime connectivity",
+      "passed": true
+    }
+  ]
+}

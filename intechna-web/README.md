@@ -1,73 +1,27 @@
-# React + TypeScript + Vite
+# Intech website
+Website tiếng Việt cho hạ tầng mạng và thiết bị doanh nghiệp, dùng Next.js 16, React, TypeScript, Drizzle và MariaDB 10.6/MySQL 8. Chạy cả web và database trên cPanel iNET có Node.js 22 từ 22.20.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Đọc [hướng dẫn cPanel + MySQL](CPANEL-MYSQL.md) để tạo database, điền `.env.local`, thử local và deploy. Database mới không có sản phẩm mẫu; sản phẩm bạn tự thêm và xuất bản trong admin là nguồn duy nhất của catalog.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+npm ci
+npm run db:migrate
+npm run db:check
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Production: cấu hình database/admin/domain, chạy `npm run security:preflight`, `npm run build`, rồi Restart Node.js App với startup file `server.js`. Trên máy tính, có thể dùng `npm run start` sau build.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+npm run typecheck
+npm run lint
+npm test
+npm run format:check
+npm run build:ci
 ```
+
+CI build dùng một bản sao tạm với adapter riêng để kiểm tra catalog trống; không kết nối database thật. Kiểm tra iNET thực tế cần tên database/user/password của chủ website.
+
+Schema trong `app/lib/db/schema.ts`, SQL tạo bảng ở `drizzle/0001_mysql.sql`; migration chạy riêng, không chạy khi khách mở trang. Public catalog/editorial cache tự hết hạn và được xóa ngay khi admin sửa nội dung. Admin kiểm tra quyền, phiên thu hồi và validation ở server. Cấu hình `ADMIN_MFA_REQUIRED=false` dùng `ADMIN_USER`/`ADMIN_PASSWORD` để đăng nhập không cần Authenticator; MFA chỉ áp dụng khi được bật trong môi trường. Upload cPanel lưu trong `public/uploads` cần quyền ghi và được giữ qua deploy.
+
+`db:backup`/`db:restore` sao lưu MySQL và uploads có checksum, không khôi phục các phiên cũ. `content:export/import/validate` chuyển nội dung do chủ website tạo. Không gửi `.env*`, `data/owner`, backups, uploads riêng hay bản build thử kèm source; dùng `handover:package` và `handover:verify`.

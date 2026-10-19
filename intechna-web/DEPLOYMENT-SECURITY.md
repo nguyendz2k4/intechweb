@@ -1,22 +1,8 @@
-# Deployment security checklist
+# Triển khai và sở hữu
+Dùng [hướng dẫn cPanel MariaDB](CPANEL-MYSQL.md). Chủ website giữ tài khoản cPanel/iNET, database, domain/DNS và email. Database/user phải gắn đúng quyền vào database riêng; runtime dùng DML, tạo schema chạy riêng. Secrets không đưa vào source ZIP.
 
-## Required before public hosting
+Admin production dùng HttpOnly cookie, RBAC, giới hạn đăng nhập và phiên thu hồi. Theo lựa chọn của chủ, `ADMIN_MFA_REQUIRED=false` cho phép cấu hình `ADMIN_USER`/`ADMIN_PASSWORD` và đăng nhập bằng mật khẩu; mật khẩu tự đổi được lưu dạng scrypt trong DB. MFA tùy chọn chỉ chạy khi bật lại cấu hình. Tạo khóa session và token health riêng; giữ khóa mã hóa credential đang có cùng backup. IP header chỉ được tin khi proxy iNET xóa/ghi đè đúng.
 
-1. Set admin credentials in hosting environment variables:
-   - `ADMIN_USER`
-   - `ADMIN_PASSWORD` — use a long random password, at least 16-24 characters.
-2. Keep `/admin` and `/api/admin/*` protected. If the variables are missing, admin is disabled with HTTP 503.
-3. Use HTTPS only on production.
-4. Do not commit `.env.local` or real passwords.
-5. Store product datasheets/images under `public/uploads`; only upload trusted image/PDF files. Current limits: image <= 3MB, PDF <= 10MB; SVG is intentionally not allowed.
-6. Security headers are enabled globally: CSP, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy.
-7. If admin editing is needed on production, use server hosting that supports Next.js API routes. Static-only hosting will not support the admin APIs.
-7. After deployment, test:
-   - `/admin` asks for login.
-   - Wrong password returns 401.
-   - `/robots.txt` disallows `/admin/` and `/api/admin/`.
-   - `/sitemap.xml` does not include admin/API URLs.
+Upload local cần thư mục bền vững có quyền ghi. Giữ uploads qua deploy và sao lưu cùng database. `db:backup` bỏ session/rate/replay; `db:restore` chỉ vào database trống, tên khác nguồn, ở development/staging. DDL MySQL commit riêng; khi lỗi phải kiểm tra đích trước khi dùng.
 
-## Current known item
-
-`npm audit --omit=dev` reports a moderate PostCSS advisory through Next.js. Do **not** run `npm audit fix --force` because it proposes downgrading/breaking Next. Update Next.js normally when a patched stable version is available.
+Quality gates và CI fixture kiểm tra code; preflight kiểm tra cấu hình. Chúng không chứng minh kết nối iNET, SMTP/email, độ bền storage hay khôi phục trên hosting. Chạy smoke test thật sau deploy. Các tài liệu kiểm chứng PostgreSQL cũ trong docs/admin-security là lịch sử, không xác minh hệ MySQL hiện tại.

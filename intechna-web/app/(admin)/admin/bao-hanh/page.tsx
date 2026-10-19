@@ -1,11 +1,17 @@
 import { WarrantyAdminClient } from './WarrantyAdminClient'
+import { requireAdminPage } from '@/app/lib/admin-auth-page'
 
-export default function AdminWarrantyPage() {
+export default async function AdminWarrantyPage() {
+  await requireAdminPage('warranty:read')
   return (
     <>
       <section className="admin-title">
-        <h1>Kích hoạt bảo hành</h1>
-        <p>Nhập thông tin thiết bị và khách hàng để kích hoạt bảo hành mới. Lưu ý: Sau khi đã kích hoạt, thông tin bảo hành không thể chỉnh sửa hoặc xóa vì lý do bảo mật dữ liệu.</p>
+        <p className="admin-eyebrow">Chăm sóc khách hàng</p>
+        <h1>Bảo hành</h1>
+        <p>
+          Thêm, chỉnh sửa và tra cứu hồ sơ bảo hành của thiết bị, bao gồm sản phẩm đã mua từ năm
+          2024. Ngày mua và ngày hết hạn được lưu theo hồ sơ thực tế.
+        </p>
       </section>
       <WarrantyAdminClient />
     </>

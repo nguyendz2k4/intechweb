@@ -1,120 +1,150 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Breadcrumbs, CTA, FAQSection } from '@/app/components'
-import { productCategories, products } from '@/app/data'
+import Image from 'next/image'
+import { Breadcrumbs, CTA } from '@/app/components'
+import { productCategories } from '@/app/data'
+import { getCatalogProducts } from '@/app/catalog-data'
+import { catalogSlug } from '@/app/catalog-utils'
+import { JsonLd } from '@/app/JsonLd'
+import { collectionSchema, pageMetadata } from '@/app/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Sản phẩm thiết bị mạng, firewall, WiFi, server, camera',
-  description: 'Intech cung cấp switch, router, firewall, WiFi doanh nghiệp, server, lưu trữ, camera và phụ kiện hạ tầng mạng tại Nghệ An.',
-  alternates: { canonical: '/san-pham' },
+export const revalidate = 3600
+
+const categoryImages: Record<string, string> = {
+  switch: 'core-switch',
+  router: 'router',
+  firewall: 'firewall',
+  'wifi-access-point': 'wifi-ap',
+  'nas-luu-tru': 'nas',
+  'module-quang-phu-kien': 'optical-module',
 }
 
-export default function ProductsPage() {
-  return (
-    <main>
-      <Breadcrumbs current="Sản phẩm" />
-      
-      {/* Products Grid Section */}
-      <section className="section reveal">
-        <div className="asym-grid-16-10" style={{ alignItems: 'flex-start', marginBottom: '56px' }}>
-          <div>
-            <p className="eyebrow">Sản phẩm</p>
-            <h1 style={{ marginBottom: '24px' }}>Thiết bị mạng, WiFi, firewall, lưu trữ và phụ kiện hạ tầng CNTT</h1>
-            <p className="lead" style={{ margin: 0 }}>
-              Intech xây dựng catalog theo hướng “liên hệ tư vấn/báo giá”, chọn thiết bị dựa trên nhu cầu thực tế, độ ổn định, chi phí, khả năng mở rộng và mức độ hỗ trợ kỹ thuật.
-            </p>
-          </div>
-          <div style={{ alignSelf: 'center', display: 'flex', width: '100%', justifyContent: 'flex-end' }}>
-            <Link className="btn primary" href="/san-pham/catalog">Xem catalog model</Link>
-          </div>
-        </div>
+export const metadata = pageMetadata({
+  title: 'Sản phẩm & thiết bị hạ tầng mạng doanh nghiệp',
+  description:
+    'Khám phá switch, router, firewall, WiFi, NAS và phụ kiện hạ tầng. Intech tư vấn cấu hình thiết bị theo nhu cầu vận hành của doanh nghiệp.',
+  path: '/san-pham',
+})
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '28px' }}>
-          {products.map((p, index) => (
-            <article 
-              className="card liquid-glass" 
-              key={p.title} 
-              style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                justifyContent: 'space-between', 
-                padding: '32px',
-                animationDelay: `${index * 100}ms`
-              }}
+export default async function ProductsPage() {
+  const products = await getCatalogProducts()
+  const brands = Array.from(new Set(products.map((product) => product.brand))).sort()
+  return (
+    <main className="catalog-page">
+      <JsonLd
+        data={collectionSchema({
+          name: 'Danh mục thiết bị hạ tầng mạng doanh nghiệp',
+          description: 'Chọn thiết bị mạng theo nhu cầu triển khai của doanh nghiệp.',
+          path: '/san-pham',
+          items: productCategories.map((category) => ({
+            name: category.title,
+            path: `/san-pham/${category.slug}`,
+          })),
+        })}
+      />
+      <Breadcrumbs current="Sản phẩm" currentPath="/san-pham" />
+      <section className="section catalog-hub-hero">
+        <div>
+          <p className="eyebrow">Thiết bị hạ tầng doanh nghiệp</p>
+          <h1>
+            <span className="sr-only">Sản phẩm thiết bị mạng doanh nghiệp. </span>
+            Kết nối tốt.
+            <br />
+            Vận hành bền.
+          </h1>
+          <p className="lead">
+            Từ kết nối đầu tiên đến một hệ thống hoàn chỉnh. Khám phá thiết bị phù hợp cho hạ tầng
+            mạng của bạn.
+          </p>
+          <div className="actions">
+            <Link className="btn primary" href="/san-pham/catalog">
+              Khám phá catalog <span aria-hidden="true">↗</span>
+            </Link>
+            <Link className="catalog-text-link" href="/lien-he">
+              Tư vấn cấu hình <span aria-hidden="true">↗</span>
+            </Link>
+          </div>
+          <p className="catalog-hero-note">
+            {products.length} model · {brands.length} thương hiệu · Tư vấn theo hiện trạng
+          </p>
+        </div>
+        <div className="catalog-hub-hardware">
+          <Image
+            src="/images/hardware/infrastructure.webp"
+            alt="Render minh họa hệ sinh thái thiết bị mạng"
+            width={1536}
+            height={1024}
+            sizes="(max-width: 800px) 90vw, 600px"
+            priority
+          />
+          <span>Được chọn cho hệ thống của bạn.</span>
+        </div>
+      </section>
+      <section className="section catalog-categories-section">
+        <div className="catalog-section-heading">
+          <div>
+            <p className="eyebrow">Bắt đầu từ nhu cầu</p>
+            <h2>
+              Mỗi kết nối.
+              <br />
+              Một thiết bị phù hợp.
+            </h2>
+          </div>
+          <Link href="/san-pham/catalog" className="catalog-text-link">
+            Xem tất cả model <span aria-hidden="true">↗</span>
+          </Link>
+        </div>
+        <div className="catalog-category-grid">
+          {productCategories.map((category, index) => (
+            <Link
+              className="catalog-category-card"
+              key={category.slug}
+              href={`/san-pham/${category.slug}`}
             >
-              <div>
-                <span className="font-mono" style={{ fontSize: '11px', color: 'var(--blue-dark)', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '10px' }}>
-                  Hạ tầng {String(index + 1).padStart(2, '0')}
-                </span>
-                <h3 style={{ fontSize: '20px', marginBottom: '14px', color: 'var(--ink)' }}>{p.title}</h3>
-                <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px' }}>{p.desc}</p>
+              <div className="catalog-category-number">
+                <span>{String(index + 1).padStart(2, '0')}</span>
+                <span aria-hidden="true">↗</span>
               </div>
-              {'models' in p && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', borderTop: '1px dashed var(--line)', paddingTop: '16px', marginTop: 'auto' }}>
-                  {p.models.map((model) => (
-                    <span 
-                      key={model} 
-                      className="font-mono"
-                      style={{ 
-                        fontSize: '11px', 
-                        padding: '4px 10px', 
-                        background: 'var(--blue-light)', 
-                        color: 'var(--blue-dark)', 
-                        borderRadius: '6px', 
-                        fontWeight: '600' 
-                      }}
-                    >
-                      {model}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </article>
+              <Image
+                className="catalog-category-image"
+                src={`/images/hardware/${categoryImages[category.slug]}.webp`}
+                width={960}
+                height={640}
+                alt={`Render minh họa ${category.title}`}
+                sizes="(max-width: 520px) 90vw, (max-width: 800px) 45vw, 380px"
+              />
+              <h3>{category.title}</h3>
+              <p>{category.description}</p>
+              <span className="catalog-text-link">
+                {products.filter((product) => product.categorySlug === category.slug).length} model
+                tham khảo
+              </span>
+            </Link>
           ))}
         </div>
+        <p className="catalog-image-caption">
+          Hình ảnh minh họa dòng thiết bị. Chọn model để xem thông tin cấu hình.
+        </p>
       </section>
-
-      {/* Categories Section */}
-      <section className="section surface reveal">
-        <div className="heading">
-          <p className="eyebrow">Catalog SEO</p>
-          <h2>Danh mục thiết bị có thể tách trang để đẩy SEO và chạy quảng cáo</h2>
+      <section className="section catalog-brand-band">
+        <div>
+          <p className="eyebrow">Hệ sinh thái thiết bị</p>
+          <h2>
+            Thương hiệu bạn tin tưởng.
+            <br />
+            Cấu hình Intech chọn cùng bạn.
+          </h2>
         </div>
-        <div className="bento-grid">
-          {productCategories.slice(0, 4).map((item, index) => {
-            const isDouble = index === 0 || index === 3
-            return (
-              <article 
-                className={`card liquid-glass ${isDouble ? 'bento-double' : ''}`} 
-                key={item.slug} 
-                style={{ padding: '36px' }}
-              >
-                <span className="font-mono" style={{ fontSize: '11px', color: 'var(--blue-dark)', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '10px' }}>
-                  Phân nhóm SEO
-                </span>
-                <h3 style={{ fontSize: isDouble ? '24px' : '20px', marginBottom: '14px' }}>{item.title}</h3>
-                <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px' }}>{item.description}</p>
-                <Link 
-                  href={`/san-pham/${item.slug}`} 
-                  style={{ 
-                    fontWeight: '700', 
-                    color: 'var(--blue-dark)', 
-                    fontSize: '14px', 
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <span>Xem danh mục</span>
-                  <span>→</span>
-                </Link>
-              </article>
-            )
-          })}
+        <div className="catalog-brand-links">
+          {brands.map((brand) => (
+            <Link key={brand} href={`/thuong-hieu/${catalogSlug(brand)}`}>
+              {brand} <span aria-hidden="true">↗</span>
+            </Link>
+          ))}
         </div>
+        <Link className="catalog-text-link" href="/thuong-hieu">
+          Khám phá theo thương hiệu <span aria-hidden="true">↗</span>
+        </Link>
       </section>
-      
-      <FAQSection />
       <CTA />
     </main>
   )

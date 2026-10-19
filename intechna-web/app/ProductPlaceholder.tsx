@@ -1,7 +1,3 @@
-'use client'
-
-import React from 'react'
-
 interface PlaceholderProps {
   brand: string
   categorySlug: string
@@ -9,427 +5,199 @@ interface PlaceholderProps {
   className?: string
 }
 
-export function ProductPlaceholder({ brand, categorySlug, name, className = '' }: PlaceholderProps) {
-  const brandName = brand.trim()
-  const displayBrand = brandName || 'INTECH'
-  
-  // Xác định màu sắc chủ đạo của hãng để vẽ và tạo gradient background
-  const getBrandColors = (b: string) => {
-    const nameLower = b.toLowerCase()
-    if (nameLower.includes('cisco')) {
-      return {
-        primary: '#1d63ed', // Blue
-        secondary: '#00bceb', // Light Blue
-        bgGradient: 'linear-gradient(135deg, #0d1e3d 0%, #1a365d 100%)',
-        textColor: '#e2e8f0'
-      }
-    }
-    if (nameLower.includes('fortinet') || nameLower.includes('fortigate')) {
-      return {
-        primary: '#c026d3', // Crimson / Redish Purple
-        secondary: '#dc2626', // Red
-        bgGradient: 'linear-gradient(135deg, #3b0764 0%, #1e1b4b 100%)',
-        textColor: '#fdf4ff'
-      }
-    }
-    if (nameLower.includes('aruba') || nameLower.includes('hpe')) {
-      return {
-        primary: '#f97316', // Orange
-        secondary: '#eab308', // Yellow
-        bgGradient: 'linear-gradient(135deg, #2d1a0f 0%, #1c1917 100%)',
-        textColor: '#fff7ed'
-      }
-    }
-    if (nameLower.includes('ruijie') || nameLower.includes('reyee')) {
-      return {
-        primary: '#2563eb', // Blue
-        secondary: '#3b82f6', // Bright Blue
-        bgGradient: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-        textColor: '#f1f5f9'
-      }
-    }
-    if (nameLower.includes('ubiquiti') || nameLower.includes('unifi')) {
-      return {
-        primary: '#0055ff', // Unifi Blue
-        secondary: '#38bdf8', // Sky Blue
-        bgGradient: 'linear-gradient(135deg, #020617 0%, #0f172a 100%)',
-        textColor: '#f0f9ff'
-      }
-    }
-    // Default brand colors
-    return {
-      primary: '#0f766e', // Teal
-      secondary: '#14b8a6', 
-      bgGradient: 'linear-gradient(135deg, #091e1d 0%, #020617 100%)',
-      textColor: '#f0fdfa'
-    }
-  }
+function Ports({
+  count = 12,
+  x = 172,
+  y = 150,
+  step = 17,
+}: {
+  count?: number
+  x?: number
+  y?: number
+  step?: number
+}) {
+  return Array.from({ length: count }, (_, index) => (
+    <g key={index} transform={`translate(${x + index * step} ${y})`}>
+      <rect width="12" height="14" rx="1" fill="#232326" stroke="#66666b" strokeWidth=".7" />
+      <path d="M2 3h8M3 5v3m2-3v3m2-3v3m2-3v3M4 12h4" stroke="#aaa9a5" strokeWidth=".6" />
+      <circle cx="3" cy="-4" r="1.2" fill={index % 4 === 0 ? '#49a37a' : '#77777c'} />
+      <circle cx="9" cy="-4" r="1.2" fill="#77777c" />
+    </g>
+  ))
+}
 
-  const colors = getBrandColors(displayBrand)
-
-  // Vẽ SVG tương ứng với loại thiết bị
-  const renderHardwareSvg = () => {
-    const slug = categorySlug.toLowerCase()
-    
-    if (slug.includes('switch')) {
-      // Thiết bị Switch rackmount 19-inch
-      return (
-        <svg viewBox="0 0 200 80" className="w-full h-full opacity-85" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Main rack unit body */}
-          <rect x="10" y="25" width="180" height="30" rx="3" fill="#1e293b" stroke="#475569" strokeWidth="1.5" />
-          {/* Left Rack Ear (tai rackmount) */}
-          <rect x="4" y="21" width="6" height="38" rx="1" fill="#475569" />
-          <circle cx="7" cy="27" r="1" fill="#94a3b8" />
-          <circle cx="7" cy="53" r="1" fill="#94a3b8" />
-          
-          {/* Right Rack Ear */}
-          <rect x="190" y="21" width="6" height="38" rx="1" fill="#475569" />
-          <circle cx="193" cy="27" r="1" fill="#94a3b8" />
-          <circle cx="193" cy="53" r="1" fill="#94a3b8" />
-
-          {/* Logo / Brand Plate */}
-          <rect x="18" y="32" width="30" height="6" rx="1" fill="#0f172a" />
-          <text x="20" y="37" fontFamily="monospace" fontSize="4" fontWeight="bold" fill={colors.secondary}>{displayBrand.slice(0, 10).toUpperCase()}</text>
-
-          {/* RJ45 Ports - Group 1 (8 Ports) */}
-          {Array.from({ length: 8 }).map((_, i) => {
-            const x = 55 + i * 8
-            const active = i % 3 === 0
-            const amber = i === 4
-            return (
-              <g key={`port1-${i}`}>
-                {/* Port socket */}
-                <rect x={x} y={32} width="6" height="6" rx="1" fill="#020617" stroke="#334155" strokeWidth="0.5" />
-                {/* Internal pins representation */}
-                <line x1={x + 1} y1={33} x2={x + 5} y2={33} stroke="#475569" strokeWidth="0.5" />
-                {/* LED indicators above the port */}
-                <circle cx={x + 2} cy={30} r="0.6" fill={active ? '#10b981' : amber ? '#f59e0b' : '#334155'} />
-                <circle cx={x + 4} cy={30} r="0.6" fill={active ? '#10b981' : '#334155'} />
-              </g>
-            )
-          })}
-
-          {/* RJ45 Ports - Group 2 (8 Ports) */}
-          {Array.from({ length: 8 }).map((_, i) => {
-            const x = 125 + i * 8
-            const active = i % 2 === 0
-            return (
-              <g key={`port2-${i}`}>
-                <rect x={x} y={32} width="6" height="6" rx="1" fill="#020617" stroke="#334155" strokeWidth="0.5" />
-                <line x1={x + 1} y1={33} x2={x + 5} y2={33} stroke="#475569" strokeWidth="0.5" />
-                <circle cx={x + 2} cy={30} r="0.6" fill={active ? '#10b981' : '#334155'} />
-                <circle cx={x + 4} cy={30} r="0.6" fill={active ? '#10b981' : '#334155'} />
-              </g>
-            )
-          })}
-
-          {/* SFP Uplink ports */}
-          <rect x="17" y="44" width="8" height="5" rx="0.5" fill="#0f172a" stroke="#475569" strokeWidth="0.5" />
-          <rect x="27" y="44" width="8" height="5" rx="0.5" fill="#0f172a" stroke="#475569" strokeWidth="0.5" />
-          <circle cx="21" cy="47" r="0.5" fill="#10b981" />
-          <circle cx="31" cy="47" r="0.5" fill="#10b981" />
-
-          {/* Ventilation grilles on the left */}
-          <line x1="175" y1="33" x2="175" y2="47" stroke="#334155" strokeWidth="1" strokeDasharray="1 1" />
-          <line x1="178" y1="33" x2="178" y2="47" stroke="#334155" strokeWidth="1" strokeDasharray="1 1" />
-          <line x1="181" y1="33" x2="181" y2="47" stroke="#334155" strokeWidth="1" strokeDasharray="1 1" />
-
-          {/* Main Status LEDs */}
-          <circle cx="12" cy="35" r="1" fill="#10b981" /> {/* Power */}
-          <circle cx="12" cy="40" r="1" fill="#10b981" /> {/* Status */}
-          <circle cx="12" cy="45" r="1" fill="#10b981" /> {/* Act */}
-        </svg>
-      )
-    }
-
-    if (slug.includes('wifi') || slug.includes('ap') || slug.includes('access-point')) {
-      // Thiết bị Access Point gắn trần (ví dụ Aruba AP, Unifi)
-      return (
-        <svg viewBox="0 0 200 120" className="w-full h-full opacity-85" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Sóng WiFi phát ra */}
-          <circle cx="100" cy="60" r="55" stroke={colors.secondary} strokeWidth="1" strokeDasharray="3 6" opacity="0.15" />
-          <circle cx="100" cy="60" r="45" stroke={colors.primary} strokeWidth="1" strokeDasharray="2 4" opacity="0.3" />
-          <circle cx="100" cy="60" r="35" stroke={colors.secondary} strokeWidth="1" opacity="0.45" />
-
-          {/* Body AP tròn bo góc hoặc đĩa tròn */}
-          <circle cx="100" cy="60" r="28" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="2" />
-          {/* Inner ring */}
-          <circle cx="100" cy="60" r="27" fill="#ffffff" />
-          {/* Subtle shading */}
-          <circle cx="100" cy="60" r="24" fill="url(#ap-shading)" opacity="0.1" />
-
-          {/* Center LED ring (Đặc trưng AP cao cấp) */}
-          <circle cx="100" cy="60" r="8" stroke={colors.primary} strokeWidth="1.5" fill="none" filter="url(#glow)" />
-          <circle cx="100" cy="60" r="8" stroke="#ffffff" strokeWidth="0.5" fill="none" />
-
-          {/* Logo hãng nhỏ đặt ở dưới */}
-          <text x="100" y="80" fontFamily="sans-serif" fontSize="5" fontWeight="700" fill="#94a3b8" textAnchor="middle">{displayBrand.toUpperCase()}</text>
-
-          {/* Defs for gradients & glow */}
-          <defs>
-            <radialGradient id="ap-shading" cx="100" cy="60" r="24" gradientUnits="userSpaceOnUse">
-              <stop offset="70%" stopColor="#ffffff" stopOpacity="0" />
-              <stop offset="100%" stopColor="#000000" stopOpacity="1" />
-            </radialGradient>
-            <filter id="glow" x="85" y="45" width="30" height="30" filterUnits="userSpaceOnUse">
-              <feGaussianBlur stdDeviation="1.5" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-          </defs>
-        </svg>
-      )
-    }
-
-    if (slug.includes('firewall') || slug.includes('fortigate') || slug.includes('sophos')) {
-      // Thiết bị Firewall bảo mật (Màu đỏ đặc trưng hoặc hộp cứng)
-      return (
-        <svg viewBox="0 0 200 80" className="w-full h-full opacity-85" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Main Body */}
-          <rect x="15" y="20" width="170" height="40" rx="4" fill="#3b0764" stroke={colors.primary} strokeWidth="1.5" />
-          
-          {/* Red accents (đặc trưng thiết bị tường lửa như Fortinet) */}
-          <path d="M15 20 H70 L60 60 H15 Z" fill="#9d174d" opacity="0.3" />
-          <rect x="15" y="20" width="170" height="3" fill={colors.secondary} />
-          
-          {/* Grid lines (Mặt trước thiết bị) */}
-          <line x1="75" y1="28" x2="160" y2="28" stroke="#6b21a8" strokeWidth="1" strokeDasharray="2 2" />
-          <line x1="75" y1="33" x2="160" y2="33" stroke="#6b21a8" strokeWidth="1" strokeDasharray="2 2" />
-          
-          {/* Status Panel (Màn hình/LED) */}
-          <rect x="25" y="30" width="40" height="20" rx="2" fill="#0f172a" stroke="#581c87" strokeWidth="1" />
-          
-          {/* Shield/Security Icon on panel */}
-          <path d="M45 35 C45 35 48 36 51 35 C51 38 51 43 45 46 C39 43 39 38 39 35 C42 36 45 35 45 35 Z" fill={colors.secondary} opacity="0.8" />
-          <text x="32" y="47" fontFamily="monospace" fontSize="5" fontWeight="bold" fill="#10b981">SECURE</text>
-
-          {/* LAN/WAN Interfaces */}
-          {Array.from({ length: 4 }).map((_, i) => {
-            const x = 145 + i * 9
-            const led = i === 0 || i === 1
-            return (
-              <g key={`fw-port-${i}`}>
-                <rect x={x} y={42} width="7" height="6" rx="0.5" fill="#020617" stroke="#6b21a8" strokeWidth="0.5" />
-                <circle cx={x + 3.5} cy={39} r="0.7" fill={led ? '#10b981' : '#475569'} />
-              </g>
-            )
-          })}
-          
-          <text x="145" y="53" fontFamily="sans-serif" fontSize="3.5" fill="#a78bfa">WAN</text>
-          <text x="154" y="53" fontFamily="sans-serif" fontSize="3.5" fill="#a78bfa">LAN1</text>
-          <text x="163" y="53" fontFamily="sans-serif" fontSize="3.5" fill="#a78bfa">LAN2</text>
-          <text x="172" y="53" fontFamily="sans-serif" fontSize="3.5" fill="#a78bfa">DMZ</text>
-
-          {/* Logo brand */}
-          <text x="80" y="47" fontFamily="sans-serif" fontSize="8" fontWeight="800" fill="#f3e8ff" letterSpacing="0.05em">{displayBrand.toUpperCase()}</text>
-
-          {/* System LEDs */}
-          <circle cx="75" cy="45" r="0.8" fill="#10b981" />
-          <circle cx="75" cy="49" r="0.8" fill="#10b981" />
-        </svg>
-      )
-    }
-
-    if (slug.includes('router') || slug.includes('draytek') || slug.includes('mikrotik')) {
-      // Thiết bị Router chuyên dụng có Ăng ten
-      return (
-        <svg viewBox="0 0 200 90" className="w-full h-full opacity-85" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Antennas (Ăng-ten phía sau) */}
-          <line x1="45" y1="40" x2="25" y2="10" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="155" y1="40" x2="175" y2="10" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="100" y1="40" x2="100" y2="8" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
-
-          {/* Main Body */}
-          <rect x="25" y="40" width="150" height="35" rx="3" fill="#1e293b" stroke="#334155" strokeWidth="1.5" />
-          {/* Front Panel Grid */}
-          <rect x="35" y="46" width="130" height="23" rx="1.5" fill="#0f172a" stroke="#1e293b" strokeWidth="1" />
-
-          {/* Brand */}
-          <text x="42" y="60" fontFamily="sans-serif" fontSize="7" fontWeight="800" fill="#cbd5e1">{displayBrand.toUpperCase()}</text>
-
-          {/* Interface status LED row */}
-          {Array.from({ length: 6 }).map((_, i) => {
-            const x = 110 + i * 8
-            const active = i !== 3 && i !== 5
-            return (
-              <g key={`rt-led-${i}`}>
-                <circle cx={x} cy={53} r="1.2" fill={active ? '#10b981' : '#334155'} />
-                <rect x={x - 2} y={58} width="4" height="6" rx="0.5" fill="#1e293b" />
-                <text x={x} y={63} fontFamily="sans-serif" fontSize="4.5" fill="#64748b" textAnchor="middle">{i + 1}</text>
-              </g>
-            )
-          })}
-          
-          {/* Signal Indicator */}
-          <path d="M92 50 A 2 2 0 0 1 95 53" stroke="#10b981" strokeWidth="0.8" strokeLinecap="round" />
-          <path d="M90 48 A 4 4 0 0 1 97 53" stroke="#10b981" strokeWidth="0.8" strokeLinecap="round" />
-          <path d="M88 46 A 6 6 0 0 1 99 53" stroke="#10b981" strokeWidth="0.8" strokeLinecap="round" />
-          <circle cx="97" cy="53" r="0.8" fill="#10b981" />
-        </svg>
-      )
-    }
-
-    if (slug.includes('nas') || slug.includes('luu-tru') || slug.includes('server') || slug.includes('o-cung')) {
-      // Thiết bị NAS / Server lưu trữ
-      return (
-        <svg viewBox="0 0 200 100" className="w-full h-full opacity-85" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* NAS Chassis (Thân đứng mini-tower) */}
-          <rect x="55" y="10" width="90" height="80" rx="5" fill="#0f172a" stroke="#334155" strokeWidth="2" />
-          
-          {/* Front Drive Bays (Khay ổ đĩa ổ cứng) */}
-          {Array.from({ length: 4 }).map((_, i) => {
-            const y = 18 + i * 15
-            const active = i !== 3
-            return (
-              <g key={`bay-${i}`}>
-                {/* Bay drawer outline */}
-                <rect x="63" y={y} width="74" height="11" rx="1" fill="#1e293b" stroke="#334155" strokeWidth="0.5" />
-                {/* Release latch button */}
-                <rect x="127" y={y + 2} width="8" height="7" rx="0.5" fill="#0f172a" />
-                {/* Activity LED */}
-                <circle cx="68" cy={y + 5.5} r="1" fill={active ? '#10b981' : '#ef4444'} />
-                {/* Disk slots handle lines */}
-                <line x1="75" y1={y + 5.5} x2="115" y2={y + 5.5} stroke="#475569" strokeWidth="1" strokeDasharray="3 3" />
-              </g>
-            )
-          })}
-
-          {/* Power Button */}
-          <circle cx="100" cy="81" r="3" fill="#1e293b" stroke="#00d8ff" strokeWidth="1" />
-          <circle cx="100" cy="81" r="1.2" fill="#00d8ff" />
-          <text x="107" y="83" fontFamily="sans-serif" fontSize="5.5" fontWeight="bold" fill="#64748b">POWER</text>
-        </svg>
-      )
-    }
-
-    if (slug.includes('module') || slug.includes('quang') || slug.includes('phu-kien') || slug.includes('cap') || slug.includes('sfp')) {
-      // Phụ kiện / Module quang SFP
-      return (
-        <svg viewBox="0 0 200 80" className="w-full h-full opacity-85" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Metallic SFP Body */}
-          <path d="M 30 25 H 145 L 155 35 H 170 V 45 H 155 L 145 55 H 30 Z" fill="#334155" stroke="#64748b" strokeWidth="1.5" />
-          {/* Metal gloss lines */}
-          <line x1="40" y1="30" x2="135" y2="30" stroke="#475569" strokeWidth="1" />
-          <line x1="40" y1="50" x2="135" y2="50" stroke="#475569" strokeWidth="1" />
-
-          {/* Golden connector pins on the left */}
-          <rect x="20" y="28" width="10" height="24" rx="0.5" fill="#eab308" />
-          <line x1="22" y1="28" x2="22" y2="52" stroke="#854d0e" strokeWidth="0.5" />
-          <line x1="25" y1="28" x2="25" y2="52" stroke="#854d0e" strokeWidth="0.5" />
-          <line x1="28" y1="28" x2="28" y2="52" stroke="#854d0e" strokeWidth="0.5" />
-
-          {/* Plastic pull-tab handle on the right */}
-          <path d="M 170 30 H 180 V 50 H 170 Z" fill={colors.primary} />
-          <path d="M 180 32 C 185 32 188 35 188 40 C 188 45 185 48 180 48" stroke={colors.primary} strokeWidth="2.5" strokeLinecap="round" fill="none" />
-
-          {/* Optical LC Duplex sockets */}
-          <rect x="145" y="32" width="12" height="16" rx="1" fill="#0f172a" />
-          <circle cx="151" cy="36" r="1.5" fill="#f43f5e" />
-          <circle cx="151" cy="44" r="1.5" fill="#10b981" />
-
-          {/* Text/Specs engraving */}
-          <text x="60" y="42" fontFamily="monospace" fontSize="6.5" fontWeight="bold" fill="#94a3b8">{displayBrand} SFP+</text>
-          <text x="60" y="49" fontFamily="monospace" fontSize="4.5" fill="#64748b">10G SR 850nm Duplex</text>
-        </svg>
-      )
-    }
-
-    // Default icon (Generic Hardware Concept)
+function Hardware({ category, brand }: { category: string; brand: string }) {
+  const isWifi = /wifi|access-point/.test(category)
+  const isStorage = /nas|luu-tru|server/.test(category)
+  const isModule = /module|quang|phu-kien|sfp/.test(category)
+  const isFirewall = /firewall/.test(category)
+  const isRouter = /router/.test(category)
+  if (isWifi)
     return (
-      <svg viewBox="0 0 200 100" className="w-full h-full opacity-75" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="100" cy="50" r="28" fill="#1e293b" stroke="#334155" strokeWidth="1.5" />
-        <path d="M100 35 L113 58 L87 58 Z" fill="none" stroke={colors.secondary} strokeWidth="1.5" />
-        <circle cx="100" cy="50" r="10" stroke={colors.primary} strokeWidth="1.5" fill="none" />
-        <circle cx="100" cy="50" r="4" fill={colors.secondary} />
-        <circle cx="100" cy="50" r="38" stroke="#334155" strokeWidth="1" strokeDasharray="3 3" />
-        <circle cx="138" cy="50" r="3" fill={colors.primary} />
-        <circle cx="62" cy="50" r="3" fill="#10b981" />
-      </svg>
+      <>
+        <ellipse cx="240" cy="205" rx="94" ry="9" fill="#1d1d1f" opacity=".06" />
+        <ellipse cx="240" cy="159" rx="92" ry="50" fill="#d9d9dd" stroke="#a8a8ad" />
+        <ellipse cx="240" cy="145" rx="92" ry="50" fill="#fafafc" stroke="#b6b6bd" />
+        <ellipse cx="240" cy="142" rx="83" ry="43" stroke="#e2e2e6" />
+        <ellipse cx="240" cy="142" rx="22" ry="12" stroke="#7d7d84" strokeWidth="1.2" />
+        <ellipse cx="240" cy="142" rx="18" ry="9" stroke="#ececf0" />
+        <path d="M222 157h36" stroke="#0066cc" strokeWidth="1.4" strokeLinecap="round" />
+        <text x="240" y="178" fill="#8b8b91" fontSize="8" textAnchor="middle" letterSpacing="1.3">
+          {brand}
+        </text>
+      </>
     )
-  }
-
+  if (isStorage)
+    return (
+      <>
+        <ellipse cx="243" cy="231" rx="80" ry="8" fill="#1d1d1f" opacity=".08" />
+        <path d="m172 66 29-17h119l-29 17Z" fill="#66666a" stroke="#8a8a8f" />
+        <path d="m291 66 29-17v158l-29 18Z" fill="#303034" stroke="#66666b" />
+        <rect x="172" y="66" width="119" height="159" rx="3" fill="#414145" stroke="#77777d" />
+        {[0, 1, 2, 3].map((index) => (
+          <g key={index}>
+            <rect
+              x={184 + index * 23}
+              y="86"
+              width="19"
+              height="110"
+              rx="2"
+              fill="#303034"
+              stroke="#626268"
+            />
+            <path d={`M${190 + index * 23} 104v66`} stroke="#76767d" />
+            <rect x={189 + index * 23} y="178" width="9" height="8" rx="1" fill="#222225" />
+            <circle cx={194 + index * 23} cy="80" r="1.2" fill="#49a37a" />
+          </g>
+        ))}
+        <circle cx="278" cy="211" r="3.5" fill="#252529" stroke="#a3a3a8" />
+        <text x="182" y="213" fill="#c0c0c5" fontSize="7" letterSpacing="1">
+          {brand}
+        </text>
+      </>
+    )
+  if (isModule)
+    return (
+      <>
+        <ellipse cx="242" cy="214" rx="141" ry="7" fill="#1d1d1f" opacity=".07" />
+        <path d="m110 141 26-20h209l-25 20Z" fill="#e5e5e8" stroke="#a3a3aa" />
+        <path d="m320 141 25-20v54l-25 19Z" fill="#89898f" stroke="#737379" />
+        <rect x="110" y="141" width="210" height="53" rx="2" fill="#c4c4c9" stroke="#8c8c93" />
+        <rect x="88" y="151" width="22" height="32" fill="#bab7a9" stroke="#939087" />
+        {[0, 1, 2, 3, 4].map((index) => (
+          <path key={index} d={`M${91 + index * 4} 153v27`} stroke="#777568" strokeWidth="1" />
+        ))}
+        <rect x="274" y="149" width="42" height="36" rx="1" fill="#3e3e43" />
+        <rect x="279" y="156" width="13" height="22" fill="#1d1d1f" stroke="#77777e" />
+        <rect x="298" y="156" width="13" height="22" fill="#1d1d1f" stroke="#77777e" />
+        <path d="M321 151h30v40h-30" stroke="#5d5d63" strokeWidth="4" />
+        <text x="126" y="162" fill="#57575d" fontSize="8" letterSpacing="1.2">
+          {brand}
+        </text>
+        <path d="M126 170h105m-105 5h86m-86 5h69" stroke="#939399" strokeWidth="1" />
+      </>
+    )
   return (
-    <div 
-      className={`relative w-full h-full flex flex-col items-center justify-between p-4 overflow-hidden rounded-xl border border-slate-800 ${className}`}
-      style={{ 
-        background: colors.bgGradient,
-        aspectRatio: '4/3',
-        minHeight: '160px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}
-    >
-      {/* Top Banner (Brand Badge) */}
-      <div className="w-full flex justify-between items-center z-10" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-        <span 
-          className="font-mono text-xs tracking-wider font-extrabold px-2.5 py-0.5 rounded-full"
-          style={{ 
-            color: colors.textColor, 
-            backgroundColor: `${colors.primary}25`,
-            border: `1px solid ${colors.primary}40`,
-            fontSize: '10px',
-            textTransform: 'uppercase',
-            fontWeight: 800,
-            padding: '2px 8px',
-            borderRadius: '12px'
-          }}
-        >
-          {displayBrand}
-        </span>
-        <span 
-          className="text-slate-400 font-mono" 
-          style={{ fontSize: '9px', opacity: 0.6, letterSpacing: '0.05em', color: '#94a3b8' }}
-        >
-          TECH CATALOG
-        </span>
-      </div>
-
-      {/* SVG Hardware Render - Center Container */}
-      <div 
-        className="w-full flex items-center justify-center flex-1 my-2"
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          flex: 1, 
-          width: '100%', 
-          maxHeight: '65%' 
-        }}
-      >
-        {renderHardwareSvg()}
-      </div>
-
-      {/* Bottom Technical Spec Label */}
-      <div className="w-full text-center z-10" style={{ width: '100%', textAlign: 'center' }}>
-        <p 
-          className="font-sans font-semibold truncate px-2"
-          style={{ 
-            color: '#94a3b8', 
-            fontSize: '11px', 
-            margin: 0,
-            opacity: 0.8,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}
-        >
-          {name}
-        </p>
-      </div>
-
-      {/* Subtle background grids to make it look premium */}
-      <div 
-        className="absolute inset-0 pointer-events-none" 
-        style={{ 
-          position: 'absolute',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)',
-          backgroundSize: '12px 12px',
-          opacity: 0.5,
-          pointerEvents: 'none'
-        }}
+    <>
+      <ellipse cx="244" cy="206" rx="192" ry="8" fill="#1d1d1f" opacity=".07" />
+      <path
+        d="m51 124 30-39h340l-30 39Z"
+        fill={isFirewall ? '#e1e1e5' : '#bdbdc2'}
+        stroke="#939399"
       />
+      <path
+        d="m391 124 30-39v66l-30 38Z"
+        fill={isFirewall ? '#aaaab1' : '#55555c'}
+        stroke="#898990"
+      />
+      <rect
+        x="51"
+        y="124"
+        width="340"
+        height="65"
+        rx="2.5"
+        fill={isFirewall ? '#f2f2f4' : '#85858d'}
+        stroke="#73737c"
+      />
+      <rect
+        x="56"
+        y="131"
+        width="330"
+        height="49"
+        rx="1"
+        fill={isFirewall ? '#e4e4e8' : '#686870'}
+        stroke={isFirewall ? '#c7c7cd' : '#96969d'}
+        strokeWidth=".6"
+      />
+      <path
+        d="M82 91h270m-274 5h270m-274 5h270m-274 5h270"
+        stroke={isFirewall ? '#c7c7cd' : '#a2a2a9'}
+        strokeWidth=".7"
+      />
+      <rect x="39" y="121" width="12" height="71" rx="2" fill="#a6a6ad" stroke="#7b7b83" />
+      <rect x="391" y="121" width="12" height="71" rx="2" fill="#a6a6ad" stroke="#7b7b83" />
+      {[45, 397].map((x) => (
+        <g key={x}>
+          <circle cx={x} cy="131" r="2" fill="#53535a" />
+          <circle cx={x} cy="182" r="2" fill="#53535a" />
+        </g>
+      ))}
+      <text
+        x="67"
+        y="150"
+        fill={isFirewall ? '#444449' : '#f5f5f7'}
+        fontSize="8"
+        letterSpacing="1.1"
+      >
+        {brand}
+      </text>
+      <path d="M67 157h63" stroke={isFirewall ? '#b0b0b6' : '#a6a6ad'} />
+      <circle cx="71" cy="169" r="1.6" fill="#49a37a" />
+      <circle cx="79" cy="169" r="1.6" fill="#aaaab0" />
+      <Ports
+        count={isRouter ? 6 : isFirewall ? 8 : 12}
+        x={isRouter ? 206 : isFirewall ? 186 : 157}
+        step={isRouter ? 24 : isFirewall ? 23 : 17}
+        y={150}
+      />
+      <path d="M348 146h23v23h-23Z" fill="#414147" stroke="#9999a1" />
+      <path d="M352 151h15v5h-15Zm0 10h15v5h-15Z" stroke="#c0c0c7" strokeWidth=".7" />
+      <text
+        x="158"
+        y="176"
+        fill={isFirewall ? '#74747b' : '#d2d2d8'}
+        fontSize="4.5"
+        letterSpacing="1.1"
+      >
+        NETWORK INTERFACES
+      </text>
+    </>
+  )
+}
+
+/** An illustrative industrial drawing; it does not assert a model's port count. */
+export function ProductPlaceholder({
+  brand,
+  categorySlug,
+  name,
+  className = '',
+}: PlaceholderProps) {
+  return (
+    <div
+      className={`product-schematic ${className}`}
+      role="img"
+      aria-label={`Sơ đồ minh họa dòng thiết bị ${name}`}
+    >
+      <svg viewBox="0 0 480 280" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <Hardware
+          category={categorySlug.toLowerCase()}
+          brand={(brand.trim() || 'INTECH').toUpperCase().slice(0, 15)}
+        />
+        <path d="M38 242h404M38 237v10m404-10v10" stroke="#c8c8ce" strokeWidth=".7" />
+        <text x="240" y="260" textAnchor="middle" fill="#8a8a91" fontSize="7" letterSpacing="1.8">
+          HARDWARE SCHEMATIC · MINH HỌA DÒNG THIẾT BỊ
+        </text>
+      </svg>
     </div>
   )
 }

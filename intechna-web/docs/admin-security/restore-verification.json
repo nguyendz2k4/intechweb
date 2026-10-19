@@ -1,0 +1,42 @@
+{
+  "format": "intechna-neon-restore-verification",
+  "verifiedAt": "2026-10-13T06:14:22.566Z",
+  "tables": {
+    "products": {
+      "rows": 498,
+      "canonicalHashMatched": true,
+      "sequenceMatched": true
+    },
+    "posts": {
+      "rows": 5,
+      "canonicalHashMatched": true,
+      "sequenceMatched": true
+    },
+    "services": {
+      "rows": 0,
+      "canonicalHashMatched": true,
+      "sequenceMatched": true
+    },
+    "warranty": {
+      "rows": 3,
+      "canonicalHashMatched": true,
+      "sequenceMatched": true
+    },
+    "contact_submissions": {
+      "rows": 0,
+      "canonicalHashMatched": true,
+      "sequenceMatched": true
+    }
+  },
+  "statusConstraints": 3,
+  "securityStateEmpty": true,
+  "mediaFiles": 2,
+  "targetMaintenanceRole": {
+    "rolsuper": false,
+    "rolcreatedb": true,
+    "rolcreaterole": true,
+    "rolbypassrls": true,
+    "owned_application_tables": 5
+  },
+  "note": "Target is an isolated QA database; schema owner capabilities are expected here. Runtime must use a separate least-privilege role."
+}

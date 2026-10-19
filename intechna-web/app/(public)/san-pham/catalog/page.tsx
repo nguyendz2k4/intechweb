@@ -1,50 +1,88 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Breadcrumbs, CTA, FAQSection } from '@/app/components'
-import { getProducts } from '@/app/lib/db/queries'
-import { type Product as CatalogProduct } from '@/app/products-data'
+import { notFound } from 'next/navigation'
+import { Breadcrumbs, CTA } from '@/app/components'
+import { getCatalogProducts } from '@/app/catalog-data'
+import {
+  catalogCardProducts,
+  catalogHasFilters,
+  catalogPagePath,
+  catalogProductPath,
+  catalogSearchString,
+  catalogView,
+  type CatalogSearchParams,
+} from '@/app/catalog-utils'
+import { JsonLd } from '@/app/JsonLd'
+import { collectionSchema } from '@/app/lib/seo'
+import { catalogMetadata } from '@/app/lib/catalog-seo'
 import { CatalogFilter } from './CatalogFilter'
 
-function slugify(value: string) {
-  return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+const title = 'Catalog thiết bị mạng Cisco, Aruba, MikroTik, Fortinet, Synology'
+const description =
+  'Tìm switch, WiFi, router, firewall và NAS theo model, thương hiệu hoặc loại thiết bị. Intech tư vấn cấu hình và báo giá phù hợp.'
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<CatalogSearchParams>
+}) {
+  const [products, search] = await Promise.all([getCatalogProducts(), searchParams])
+  const view = catalogView(products, new URLSearchParams(catalogSearchString(search)))
+  return catalogMetadata({ title, description, path: '/san-pham/catalog', search, page: view.page })
 }
 
-export const metadata: Metadata = {
-  title: 'Catalog thiết bị mạng Cisco, Aruba, MikroTik, Fortinet, Synology',
-  description: 'Danh sách thiết bị mạng, switch, WiFi, router, firewall, NAS tham khảo cho doanh nghiệp. Liên hệ Intech để được tư vấn cấu hình và báo giá.',
-  alternates: { canonical: '/san-pham/catalog' },
-}
-
-export default async function CatalogPage() {
-  const productList = (await getProducts()).map((product) => ({
-    ...product,
-    summary: product.summary ?? '',
-    badges: product.badges ?? [],
-    specs: product.specs ?? [],
-    applications: product.applications ?? [],
-    imageUrl: product.imageUrl ?? '',
-    datasheetUrl: product.datasheetUrl ?? '',
-  })) satisfies CatalogProduct[]
-  const categories = Array.from(new Set(productList.map((p) => p.categorySlug)))
-  const brands = Array.from(new Set(productList.map((p) => p.brand))).sort()
-
+export default async function CatalogPage({
+  searchParams,
+}: {
+  searchParams: Promise<CatalogSearchParams>
+}) {
+  const [products, search] = await Promise.all([getCatalogProducts(), searchParams])
+  const view = catalogView(products, new URLSearchParams(catalogSearchString(search)))
+  if (!view.validPage) notFound()
+  const path = catalogHasFilters(search)
+    ? `/san-pham/catalog?${catalogSearchString(search)}`
+    : catalogPagePath('/san-pham/catalog', view.page)
   return (
-    <main>
-      <Breadcrumbs current="Catalog sản phẩm" />
-      <section className="section">
-        <div className="heading">
-          <p className="eyebrow">Catalog sản phẩm</p>
-          <h1>Thiết bị mạng, WiFi, firewall và lưu trữ cho doanh nghiệp</h1>
-          <p className="lead">Danh sách model tham khảo được Intech phân nhóm theo nhu cầu triển khai. Có thể lọc nhanh theo hãng, danh mục hoặc tìm model cụ thể.</p>
-          <div className="catalog-tools">
-            <span>{productList.length} model tham khảo</span>
-            <div>{categories.map((item) => <Link key={item} href={`/san-pham/${item}`}>{item}</Link>)}</div>
-          </div>
-          <ul className="mini-list">{brands.map((brand) => <li key={brand}><Link href={`/thuong-hieu/${slugify(brand)}`}>{brand}</Link></li>)}</ul>
+    <main className="catalog-page">
+      <JsonLd
+        data={collectionSchema({
+          name: title,
+          description,
+          path,
+          items: view.visible.map((product) => ({
+            name: product.name,
+            path: catalogProductPath(product.slug),
+          })),
+        })}
+      />
+      <Breadcrumbs
+        current="Catalog thiết bị"
+        currentPath="/san-pham/catalog"
+        parents={[{ label: 'Sản phẩm', href: '/san-pham' }]}
+      />
+      <section className="section catalog-intro">
+        <p className="eyebrow">Catalog thiết bị</p>
+        <h1>
+          <span className="sr-only">Catalog thiết bị mạng. </span>
+          Thiết bị đúng.
+          <br />
+          Hệ thống vững.
+        </h1>
+        <div className="catalog-intro-bottom">
+          <p className="lead">
+            Tìm model theo hãng, loại thiết bị hoặc nhu cầu triển khai. Cấu hình cuối cùng được chọn
+            cùng kỹ sư Intech.
+          </p>
+          <Link className="catalog-text-link" href="/thuong-hieu">
+            Khám phá thương hiệu <span aria-hidden="true">↗</span>
+          </Link>
         </div>
-          <CatalogFilter products={productList} />
       </section>
-      <FAQSection />
+      <section className="section catalog-list-section" aria-label="Duyệt catalog">
+        <CatalogFilter
+          products={catalogCardProducts(products)}
+          initialSearch={catalogSearchString(search)}
+        />
+      </section>
       <CTA />
     </main>
   )

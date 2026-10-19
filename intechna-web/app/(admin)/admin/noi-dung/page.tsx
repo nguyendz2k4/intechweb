@@ -1,10 +1,19 @@
 import { posts } from '@/app/data'
 import { ContentAdminClient } from './ContentAdminClient'
+import { requireAdminPage } from '@/app/lib/admin-auth-page'
 
-export default function AdminContentPage() {
+export default async function AdminContentPage() {
+  await requireAdminPage('posts:read')
   return (
     <>
-      <section className="admin-title"><h1>Quản lý nội dung</h1><p>Thêm bài viết SEO, chỉnh tiêu đề, slug, mô tả và nội dung chính.</p></section>
+      <section className="admin-title">
+        <p className="admin-eyebrow">Nội dung website</p>
+        <h1>Bài viết</h1>
+        <p>
+          Soạn thảo, lưu bản nháp và xuất bản bài viết. Tiêu đề và mô tả tìm kiếm dùng cùng dữ liệu
+          đang hiển thị cho khách hàng.
+        </p>
+      </section>
       <ContentAdminClient posts={posts} />
     </>
   )

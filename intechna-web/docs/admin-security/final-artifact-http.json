@@ -1,0 +1,66 @@
+{
+  "verifiedAt": "2026-10-14T04:47:28.643Z",
+  "environment": "clean Next production artifact, confirmed test DB, production admin intentionally unconfigured",
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "/san-pham/catalog/cisco-cbs110-8t-d",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "/dich-vu",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "/dich-vu/thi-cong-mang-lan",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "/dich-vu/qa-not-existing",
+      "status": 404,
+      "passed": true
+    },
+    {
+      "path": "/qa-error-recovery",
+      "status": 404,
+      "passed": true
+    },
+    {
+      "path": "/qa-not-existing",
+      "status": 404,
+      "passed": true
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "/admin",
+      "status": 503,
+      "passed": true
+    },
+    {
+      "path": "/api/admin/auth/security",
+      "status": 503,
+      "passed": true
+    },
+    {
+      "path": "/api/health",
+      "status": 401,
+      "passed": true
+    },
+    {
+      "path": "/api/health authenticated",
+      "status": 200,
+      "passed": true
+    }
+  ]
+}

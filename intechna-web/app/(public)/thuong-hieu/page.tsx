@@ -1,45 +1,89 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Breadcrumbs, CTA } from '@/app/components'
-import { productList } from '@/app/products-data'
+import { getCatalogProducts } from '@/app/catalog-data'
+import { catalogCategoryName, catalogSlug } from '@/app/catalog-utils'
+import { JsonLd } from '@/app/JsonLd'
+import { collectionSchema, pageMetadata } from '@/app/lib/seo'
 
-export const metadata: Metadata = {
+export const revalidate = 3600
+
+export const metadata = pageMetadata({
   title: 'Thương hiệu thiết bị mạng Cisco, Aruba, Fortinet, MikroTik, Ruijie',
-  description: 'Danh sách thương hiệu thiết bị mạng, WiFi, firewall, router, NAS và phòng họp Intech tư vấn triển khai cho doanh nghiệp.',
-  alternates: { canonical: '/thuong-hieu' },
-}
+  description:
+    'Khám phá thiết bị mạng, WiFi, firewall, router và NAS theo thương hiệu. Intech tư vấn lựa chọn theo hiện trạng và ngân sách dự án.',
+  path: '/thuong-hieu',
+})
 
-function slugify(value: string) {
-  return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-}
-
-const brands = Array.from(new Set(productList.map((product) => product.brand))).sort().map((brand) => ({
-  brand,
-  slug: slugify(brand),
-  count: productList.filter((product) => product.brand === brand).length,
-  categories: Array.from(new Set(productList.filter((product) => product.brand === brand).map((product) => product.category))).slice(0, 4),
-}))
-
-export default function BrandsPage() {
+export default async function BrandsPage() {
+  const products = await getCatalogProducts()
+  const brands = Array.from(new Set(products.map((product) => product.brand))).sort()
   return (
-    <main>
-      <Breadcrumbs current="Thương hiệu" />
-      <section className="section">
-        <div className="heading">
-          <p className="eyebrow">Thương hiệu</p>
-          <h1>Thiết bị mạng, WiFi, firewall và lưu trữ theo hãng</h1>
-          <p className="lead">Intech xây catalog theo hãng để khách hàng dễ tham khảo model, nhóm thiết bị và gửi yêu cầu tư vấn cấu hình/báo giá.</p>
+    <main className="catalog-page">
+      <JsonLd
+        data={collectionSchema({
+          name: 'Thương hiệu thiết bị mạng',
+          description: 'Tìm thiết bị hạ tầng mạng doanh nghiệp theo thương hiệu.',
+          path: '/thuong-hieu',
+          items: brands.map((brand) => ({
+            name: brand,
+            path: `/thuong-hieu/${catalogSlug(brand)}`,
+          })),
+        })}
+      />
+      <Breadcrumbs current="Thương hiệu" currentPath="/thuong-hieu" />
+      <section className="section catalog-intro">
+        <p className="eyebrow">Hệ sinh thái thương hiệu</p>
+        <h1>
+          <span className="sr-only">Thương hiệu thiết bị mạng. </span>
+          Công nghệ bạn tin.
+          <br />
+          Giải pháp bạn cần.
+        </h1>
+        <div className="catalog-intro-bottom">
+          <p className="lead">
+            Một điểm đến cho hạ tầng mạng doanh nghiệp. Tìm thiết bị từ thương hiệu quen thuộc và
+            chọn cấu hình theo nhu cầu thực tế.
+          </p>
+          <Link className="catalog-text-link" href="/san-pham/catalog">
+            Tất cả thiết bị <span aria-hidden="true">↗</span>
+          </Link>
         </div>
-        <div className="cards">
-          {brands.map((item) => (
-            <article className="card" key={item.brand}>
-              <p className="eyebrow">{item.count} model</p>
-              <h2>{item.brand}</h2>
-              <p>Danh mục tham khảo gồm {item.categories.join(', ')}. Intech sẽ tư vấn lựa chọn theo hiện trạng, ngân sách và yêu cầu vận hành.</p>
-              <div className="actions"><Link className="btn secondary" href={`/thuong-hieu/${item.slug}`}>Xem sản phẩm {item.brand}</Link></div>
-            </article>
-          ))}
+      </section>
+      <section className="section catalog-brands-section">
+        <div className="catalog-brands-grid">
+          {brands.map((brand, index) => {
+            const models = products.filter((product) => product.brand === brand)
+            const categories = Array.from(new Set(models.map((product) => product.categorySlug)))
+            return (
+              <Link
+                className="catalog-brand-card"
+                key={brand}
+                href={`/thuong-hieu/${catalogSlug(brand)}`}
+              >
+                <div className="catalog-category-number">
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  <span aria-hidden="true">↗</span>
+                </div>
+                <h2>{brand}</h2>
+                <p>
+                  {categories
+                    .map((category) => catalogCategoryName(category, products))
+                    .join(' · ')}
+                </p>
+                <span className="catalog-text-link">{models.length} model tham khảo</span>
+              </Link>
+            )
+          })}
         </div>
+        {brands.length === 0 && (
+          <div className="catalog-empty">
+            <h2>Hệ sinh thái thiết bị đang được cập nhật.</h2>
+            <p>Intech luôn sẵn sàng tư vấn thương hiệu phù hợp cho dự án.</p>
+            <Link href="/lien-he" className="btn primary">
+              Yêu cầu tư vấn
+            </Link>
+          </div>
+        )}
       </section>
       <CTA />
     </main>

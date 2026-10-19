@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-13T06:17:18.274Z",
+  "base": "http://localhost:3000",
+  "http": {
+    "anonymous": 401,
+    "basic": 401,
+    "login": 200,
+    "authenticatedRead": 200,
+    "missingOriginMutation": 403,
+    "invalidType": 400,
+    "untrustedHost": 403
+  },
+  "database": {
+    "elevatedCapabilities": false,
+    "concurrentRateRequests": 5,
+    "accepted": 2,
+    "rejected": 3,
+    "concurrentTotpClaims": 3,
+    "acceptedTotpClaims": 1,
+    "rateBucketHash": "9c88a9331a41a03eb59d8618306fe89adb28a1d23bdca108d096e004557ed9df"
+  }
+}

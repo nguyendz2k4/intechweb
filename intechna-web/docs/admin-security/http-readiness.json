@@ -1,0 +1,38 @@
+{
+  "checkedAt": "2026-10-13T11:39:08.794Z",
+  "next": "16.3.8",
+  "results": [
+    {
+      "path": "/qa-readiness-route-does-not-exist",
+      "status": 404,
+      "noindex": true,
+      "custom404": true,
+      "rawH1Count": 1,
+      "title": "Không tìm thấy trang | Intech"
+    },
+    {
+      "path": "/san-pham/catalog/qa-missing-product-readiness",
+      "status": 404,
+      "noindex": true,
+      "custom404": true,
+      "rawH1Count": 0,
+      "title": "Không tìm thấy trang | Intech"
+    },
+    {
+      "path": "/tin-tuc/qa-missing-article-readiness",
+      "status": 404,
+      "noindex": true,
+      "custom404": true,
+      "rawH1Count": 0,
+      "title": "Không tìm thấy trang | Intech"
+    },
+    {
+      "path": "/admin",
+      "status": 503,
+      "noindex": true,
+      "custom404": false,
+      "rawH1Count": 0,
+      "title": null
+    }
+  ]
+}

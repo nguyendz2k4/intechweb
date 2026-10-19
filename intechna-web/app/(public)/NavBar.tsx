@@ -1,116 +1,121 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
-import { navItems, siteConfig } from '@/app/data'
-
-function PhoneIcon({ className = "w-4 h-4" }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.802-5.122-4.1-6.924-6.924l1.293-.97a1.125 1.125 0 00.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-    </svg>
-  )
-}
+import { useEffect, useRef } from 'react'
+import { navItems } from '@/app/data'
 
 export function NavBar() {
   const pathname = usePathname()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDetailsElement>(null)
+  const category =
+    pathname.startsWith('/san-pham') || pathname.startsWith('/thuong-hieu')
+      ? 'Thiết bị mạng'
+      : pathname.startsWith('/bao-hanh')
+        ? 'Dịch vụ bảo hành'
+        : 'Hạ tầng doanh nghiệp'
+  const active = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href))
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  // Close menu on route change
-  useEffect(() => {
-    setMenuOpen(false)
+    if (menuRef.current) menuRef.current.open = false
   }, [pathname])
 
-  // Close menu on outside click
   useEffect(() => {
-    function handleOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    const close = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && menuRef.current?.open) {
+        menuRef.current.open = false
+        menuRef.current.querySelector('summary')?.focus()
+      }
     }
-    if (menuOpen) document.addEventListener('mousedown', handleOutside)
-    return () => document.removeEventListener('mousedown', handleOutside)
-  }, [menuOpen])
-
-  function isActive(href: string) {
-    if (href === '/') return pathname === '/'
-    return pathname.startsWith(href)
-  }
+    const outside = (event: PointerEvent) => {
+      if (menuRef.current?.open && !menuRef.current.contains(event.target as Node))
+        menuRef.current.open = false
+    }
+    document.addEventListener('keydown', close)
+    document.addEventListener('pointerdown', outside)
+    return () => {
+      document.removeEventListener('keydown', close)
+      document.removeEventListener('pointerdown', outside)
+    }
+  }, [])
 
   return (
-    <header className={`navbar${scrolled ? ' navbar--scrolled' : ''}`} ref={menuRef}>
-      <div className="navbar__inner">
-        {/* Brand */}
-        <Link className="navbar__brand" href="/" aria-label="Intech – Trang chủ">
-          <span className="navbar__mark">I</span>
-          <span className="navbar__brand-text">
-            <strong>INTECH</strong>
-            <small>Network &amp; Infrastructure</small>
-          </span>
-        </Link>
-
-        {/* Desktop nav */}
-        <nav className="navbar__nav" aria-label="Điều hướng chính">
-          {navItems.map(([label, href]) => (
-            <Link
-              key={href}
-              href={href}
-              className={`navbar__link${isActive(href) ? ' navbar__link--active' : ''}`}
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* CTA button desktop */}
-        <Link className="navbar__cta btn-primary-sm" href={`tel:${siteConfig.phone}`} style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
-          <PhoneIcon className="w-4 h-4" />
-          <span>{siteConfig.phoneDisplay}</span>
-        </Link>
-
-        {/* Hamburger button */}
-        <button
-          className={`navbar__hamburger${menuOpen ? ' navbar__hamburger--open' : ''}`}
-          aria-label={menuOpen ? 'Đóng menu' : 'Mở menu'}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((v) => !v)}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
-      </div>
-
-      {/* Mobile menu overlay */}
-      {menuOpen && (
-        <div className="navbar__mobile-menu" aria-label="Menu di động">
-          <nav>
-            {navItems.map(([label, href]) => (
-              <Link
-                key={href}
-                href={href}
-                className={`navbar__mobile-link${isActive(href) ? ' navbar__mobile-link--active' : ''}`}
-              >
-                {label}
-              </Link>
-            ))}
+    <header className="site-header">
+      <div className="global-nav">
+        <div className="nav-container">
+          <Link className="nav-brand" href="/" aria-label="Intech — Trang chủ">
+            <Image
+              className="nav-brand-image"
+              src="/images/brand/intech-logo.png"
+              alt="Intech — International Technology"
+              fill
+              sizes="112px"
+              preload
+            />
+          </Link>
+          <nav className="global-links" aria-label="Điều hướng chính">
+            {navItems
+              .filter(([, href]) => href !== '/')
+              .map(([label, href]) => (
+                <Link key={href} href={href} aria-current={active(href) ? 'page' : undefined}>
+                  {label}
+                </Link>
+              ))}
           </nav>
-          <div className="navbar__mobile-footer">
-            <Link className="btn-primary-full" href={`tel:${siteConfig.phone}`} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <PhoneIcon className="w-5 h-5" />
-              <span>Gọi {siteConfig.phoneDisplay}</span>
-            </Link>
-            <Link className="btn-secondary-full" href="/lien-he">Liên hệ tư vấn</Link>
-          </div>
+          <Link className="nav-search" href="/san-pham/catalog" aria-label="Tìm thiết bị">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              aria-hidden="true"
+            >
+              <circle cx="10.5" cy="10.5" r="6.5" />
+              <path d="m16 16 5 5" />
+            </svg>
+          </Link>
+          <details className="mobile-nav" ref={menuRef}>
+            <summary aria-label="Menu điều hướng">
+              <span />
+              <span />
+            </summary>
+            <nav className="mobile-nav-panel" aria-label="Điều hướng di động">
+              {navItems.map(([label, href]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={active(href) ? 'page' : undefined}
+                  onClick={() => {
+                    if (menuRef.current) menuRef.current.open = false
+                  }}
+                >
+                  {label}
+                </Link>
+              ))}
+              <Link href="/thuong-hieu">Thương hiệu</Link>
+            </nav>
+          </details>
         </div>
-      )}
+      </div>
+      <div className="local-nav">
+        <div className="nav-container">
+          <Link
+            className="local-title"
+            href={pathname.startsWith('/bao-hanh') ? '/bao-hanh' : '/san-pham'}
+          >
+            {category}
+          </Link>
+          <nav className="local-links" aria-label="Điều hướng thiết bị">
+            <Link href="/san-pham/catalog">Catalog</Link>
+            <Link href="/thuong-hieu">Thương hiệu</Link>
+            <Link href="/bao-hanh">Tra cứu bảo hành</Link>
+          </nav>
+          <Link className="btn primary nav-quote" href="/bao-gia">
+            Yêu cầu tư vấn
+          </Link>
+        </div>
+      </div>
     </header>
   )
 }

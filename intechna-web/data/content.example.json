@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "exportedAt": "2026-10-13T00:00:00Z",
+  "counts": {
+    "products": 0,
+    "posts": 1,
+    "services": 1
+  },
+  "products": [],
+  "posts": [
+    {
+      "slug": "bai-viet-mau",
+      "title": "Bài viết mẫu để thay bằng nội dung thật",
+      "description": "Mô tả ngắn được dùng ở danh sách và thông tin tìm kiếm.",
+      "body": "## Tiêu đề phần\n\nNội dung văn bản. Có thể dùng ##, ### và danh sách bắt đầu bằng dấu -.",
+      "status": "draft",
+      "publishedAt": null
+    }
+  ],
+  "services": [
+    {
+      "slug": "dich-vu-mau",
+      "title": "Dịch vụ mẫu",
+      "description": "Thay bằng mô tả dịch vụ đã được chủ website duyệt.",
+      "keywords": "",
+      "deliverables": [
+        "Hạng mục bàn giao mẫu"
+      ],
+      "benefits": [
+        "Lợi ích mẫu"
+      ],
+      "status": "draft"
+    }
+  ]
+}

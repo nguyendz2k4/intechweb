@@ -1,42 +1,60 @@
-import { NextResponse } from 'next/server'
-import { getWarrantyRecords, getNextWarrantyCode, createWarranty } from '@/app/lib/db/queries'
+import { requireAdmin } from '@/app/lib/admin-auth'
+import { logAdminAction } from '@/app/lib/admin-audit'
+import { apiErrorResponse, enforceRateLimit } from '@/app/lib/api-security'
+import { removeWarrantyContent, saveWarrantyContent } from '@/app/lib/warranty-mutation'
 
-export async function GET() {
+export async function GET(request: Request) {
+  const denied = await requireAdmin(request, 'warranty:read')
+  if (denied) return denied
+  const blocked = await enforceRateLimit(request, 'admin:warranty:read', 120, 60 * 1000)
+  if (blocked) return blocked
   try {
-    const records = await getWarrantyRecords()
-    return NextResponse.json(records)
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const { getWarrantyRecords } = await import('@/app/lib/db/queries')
+    return Response.json(await getWarrantyRecords(), { headers: { 'Cache-Control': 'no-store' } })
+  } catch (error) {
+    return apiErrorResponse(error)
+  }
+}
+
+async function save(request: Request) {
+  const denied = await requireAdmin(request, 'warranty:write')
+  if (denied) return denied
+  const blocked = await enforceRateLimit(request, 'admin:warranty:write', 30, 60 * 1000)
+  if (blocked) return blocked
+  try {
+    const { record, status } = await saveWarrantyContent(
+      request,
+      () => import('@/app/lib/db/queries'),
+    )
+    await logAdminAction(
+      request,
+      request.method === 'PUT' ? 'warranty.update' : 'warranty.create',
+      record.code,
+    )
+    return Response.json(record, { status, headers: { 'Cache-Control': 'no-store' } })
+  } catch (error) {
+    return apiErrorResponse(error)
   }
 }
 
 export async function POST(request: Request) {
+  return save(request)
+}
+
+export async function PUT(request: Request) {
+  return save(request)
+}
+
+export async function DELETE(request: Request) {
+  const denied = await requireAdmin(request, 'warranty:write')
+  if (denied) return denied
+  const blocked = await enforceRateLimit(request, 'admin:warranty:write', 30, 60 * 1000)
+  if (blocked) return blocked
   try {
-    const body = await request.json()
-    if (!body.serial || !body.customer || !body.product) {
-      return NextResponse.json(
-        { error: 'Vui lòng nhập đầy đủ các trường bắt buộc (Serial, Khách hàng, Sản phẩm)' },
-        { status: 400 }
-      )
-    }
-
-    const year = new Date().getFullYear()
-    const code = await getNextWarrantyCode(year)
-
-    const record = {
-      code,
-      serial: body.serial,
-      customer: body.customer,
-      product: body.product,
-      purchaseDate: body.purchaseDate || '',
-      warrantyUntil: body.warrantyUntil || '',
-      status: body.status || 'Còn bảo hành',
-      note: body.note || '',
-    }
-
-    const created = await createWarranty(record)
-    return NextResponse.json(created, { status: 201 })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const code = await removeWarrantyContent(request, () => import('@/app/lib/db/queries'))
+    await logAdminAction(request, 'warranty.delete', code)
+    return Response.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } })
+  } catch (error) {
+    return apiErrorResponse(error)
   }
 }

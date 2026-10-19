@@ -1,0 +1,22 @@
+{
+  "environment": "Next production artifact, loopback, temporary QA route",
+  "desktop": {
+    "h1": 1,
+    "privateErrorLeaked": false,
+    "robots": [
+      "index, follow",
+      "noindex"
+    ],
+    "scroll": 1280,
+    "title": "Trang tạm thời gặp sự cố | Intech",
+    "width": 1280
+  },
+  "mobile": {
+    "viewport": 390,
+    "clientWidth": 390,
+    "scrollWidth": 390,
+    "h1": 1
+  },
+  "serverErrorDetailsHidden": true,
+  "retryRefetchedAndRecovered": true
+}

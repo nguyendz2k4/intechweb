@@ -1,0 +1,9 @@
+{
+  "verifiedAt": "2026-10-13T23:03:08.587Z",
+  "environment": "confirmed test DB, runtime DML role",
+  "successfulMutationRevokesOwnSessions": true,
+  "unrelatedSessionsPreserved": true,
+  "staleMutation409": true,
+  "newCredentialAndSessionPreserved": true,
+  "healthAllCriticalTablesAndPrivileges": true
+}

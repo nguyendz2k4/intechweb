@@ -1,28 +1,70 @@
-import { eq, like, desc } from 'drizzle-orm'
+import { randomBytes } from 'node:crypto'
+import { and, count, eq, desc, ne } from 'drizzle-orm'
 import { db } from './index'
+import { isDuplicateEntry } from './mysql-client.mjs'
+import { adminWarrantyRecord } from '../warranty'
+import { planWarrantyImport, type ImportLine } from '../warranty-import'
 import {
-  products, posts, services, warranty,
-  type NewProduct, type NewPost, type NewService, type NewWarrantyRecord,
+  products,
+  posts,
+  services,
+  warranty,
+  contactSubmissions,
+  type NewProduct,
+  type NewPost,
+  type NewService,
+  type NewWarrantyRecord,
 } from './schema'
 
 // ── Products ──────────────────────────────────────────────────
-export async function getProducts() {
-  return db.select().from(products).orderBy(products.createdAt)
+export async function getProducts(options: { includeDrafts?: boolean } = {}) {
+  return db
+    .select()
+    .from(products)
+    .where(options.includeDrafts ? undefined : eq(products.status, 'published'))
+    .orderBy(products.createdAt)
 }
 
-export async function getProductBySlug(slug: string) {
-  const rows = await db.select().from(products).where(eq(products.slug, slug))
+export async function getProductBySlug(slug: string, options: { includeDrafts?: boolean } = {}) {
+  const rows = await db
+    .select()
+    .from(products)
+    .where(
+      and(
+        eq(products.slug, slug),
+        options.includeDrafts ? undefined : eq(products.status, 'published'),
+      ),
+    )
+    .limit(1)
   return rows[0] ?? null
 }
 
-export async function upsertProduct(data: NewProduct) {
-  const existing = await getProductBySlug(data.slug)
-  if (existing) {
-    await db.update(products).set(data).where(eq(products.slug, data.slug))
-  } else {
-    await db.insert(products).values(data)
-  }
-  return getProductBySlug(data.slug)
+export async function getProductSlugs() {
+  return db
+    .select({ slug: products.slug })
+    .from(products)
+    .where(eq(products.status, 'published'))
+    .orderBy(products.createdAt, products.id)
+}
+
+export async function getRelatedProducts(product: {
+  slug: string
+  categorySlug: string
+  brand: string
+}) {
+  return db
+    .select()
+    .from(products)
+    .where(
+      and(
+        eq(products.status, 'published'),
+        ne(products.slug, product.slug),
+        eq(products.categorySlug, product.categorySlug),
+        eq(products.brand, product.brand),
+      ),
+    )
+    .orderBy(products.createdAt, products.id)
+    .limit(3)
 }
 
 export async function deleteProduct(slug: string) {
@@ -30,24 +72,35 @@ export async function deleteProduct(slug: string) {
   return { ok: true }
 }
 
-// ── Posts ─────────────────────────────────────────────────────
-export async function getPosts() {
-  return db.select().from(posts).orderBy(posts.publishedAt)
-}
-
-export async function getPostBySlug(slug: string) {
-  const rows = await db.select().from(posts).where(eq(posts.slug, slug))
-  return rows[0] ?? null
-}
-
-export async function upsertPost(data: NewPost) {
-  const existing = await getPostBySlug(data.slug)
-  if (existing) {
-    await db.update(posts).set(data).where(eq(posts.slug, data.slug))
-  } else {
-    await db.insert(posts).values(data)
+export async function createProduct(data: NewProduct) {
+  try {
+    return await db.transaction(async (tx) => {
+      await tx.insert(products).values(data)
+      const rows = await tx.select().from(products).where(eq(products.slug, data.slug)).limit(1)
+      return rows[0] ?? null
+    })
+  } catch (error) {
+    if (isDuplicateEntry(error)) return null
+    throw error
   }
-  return getPostBySlug(data.slug)
+}
+
+export async function updateProduct(data: NewProduct) {
+  const { id: _id, createdAt: _createdAt, ...fields } = data
+  return db.transaction(async (tx) => {
+    await tx.update(products).set(fields).where(eq(products.slug, data.slug))
+    const rows = await tx.select().from(products).where(eq(products.slug, data.slug)).limit(1)
+    return rows[0] ?? null
+  })
+}
+
+// ── Posts ─────────────────────────────────────────────────────
+export async function getPosts(options: { includeDrafts?: boolean } = {}) {
+  return db
+    .select()
+    .from(posts)
+    .where(options.includeDrafts ? undefined : eq(posts.status, 'published'))
+    .orderBy(posts.publishedAt)
 }
 
 export async function deletePost(slug: string) {
@@ -55,24 +108,53 @@ export async function deletePost(slug: string) {
   return { ok: true }
 }
 
+export async function createPost(data: NewPost) {
+  try {
+    return await db.transaction(async (tx) => {
+      await tx.insert(posts).values(data)
+      const rows = await tx.select().from(posts).where(eq(posts.slug, data.slug)).limit(1)
+      return rows[0] ?? null
+    })
+  } catch (error) {
+    if (isDuplicateEntry(error)) return null
+    throw error
+  }
+}
+
+export async function updatePost(data: NewPost) {
+  const { id: _id, ...fields } = data
+  return db.transaction(async (tx) => {
+    await tx.update(posts).set(fields).where(eq(posts.slug, data.slug))
+    const rows = await tx.select().from(posts).where(eq(posts.slug, data.slug)).limit(1)
+    return rows[0] ?? null
+  })
+}
+
 // ── Services ──────────────────────────────────────────────────
 export async function getServices() {
   return db.select().from(services).orderBy(services.id)
 }
 
-export async function getServiceBySlug(slug: string) {
-  const rows = await db.select().from(services).where(eq(services.slug, slug))
-  return rows[0] ?? null
+export async function upsertService(data: NewService) {
+  const { id: _id, ...fields } = data
+  return db.transaction(async (tx) => {
+    await tx.insert(services).values(fields).onDuplicateKeyUpdate({ set: fields })
+    const rows = await tx.select().from(services).where(eq(services.slug, data.slug)).limit(1)
+    return rows[0]
+  })
 }
 
-export async function upsertService(data: NewService) {
-  const existing = await getServiceBySlug(data.slug)
-  if (existing) {
-    await db.update(services).set(data).where(eq(services.slug, data.slug))
-  } else {
-    await db.insert(services).values(data)
+export async function createService(data: NewService) {
+  try {
+    return await db.transaction(async (tx) => {
+      await tx.insert(services).values(data)
+      const rows = await tx.select().from(services).where(eq(services.slug, data.slug)).limit(1)
+      return rows[0] ?? null
+    })
+  } catch (error) {
+    if (isDuplicateEntry(error)) return null
+    throw error
   }
-  return getServiceBySlug(data.slug)
 }
 
 export async function deleteService(slug: string) {
@@ -81,66 +163,106 @@ export async function deleteService(slug: string) {
 }
 
 // ── Warranty ──────────────────────────────────────────────────
-export async function getWarrantyRecords() {
+export async function getWarrantyRecords(now = new Date()) {
   const rows = await db.select().from(warranty).orderBy(warranty.id)
-  
-  const now = new Date()
-  const offset = now.getTimezoneOffset() * 60000
-  const localDateStr = new Date(now.getTime() - offset).toISOString().split('T')[0]
-
-  return rows.map((r) => {
-    let currentStatus = r.status || 'Còn bảo hành'
-    if (currentStatus === 'Còn bảo hành' && r.warrantyUntil && localDateStr > r.warrantyUntil) {
-      currentStatus = 'Hết hạn'
-    }
-    return { ...r, status: currentStatus }
-  })
+  return rows.map((record) => ({
+    ...adminWarrantyRecord(record, now),
+    storedStatus: record.status,
+  }))
 }
 
-export async function searchWarranty(keyword: string) {
-  const q = keyword.trim().toLowerCase()
-  if (!q) return null
-  const all = await getWarrantyRecords()
-  return all.find((r) =>
-    [r.code, r.serial, r.customer, r.product].some((v) =>
-      (v ?? '').toLowerCase().includes(q)
-    )
-  ) ?? null
-}
-
-export async function upsertWarranty(data: NewWarrantyRecord) {
-  const rows = await db.select().from(warranty).where(eq(warranty.code, data.code))
-  if (rows.length > 0) {
-    await db.update(warranty).set(data).where(eq(warranty.code, data.code))
-  } else {
-    await db.insert(warranty).values(data)
-  }
-  return data
-}
-
-export async function getNextWarrantyCode(year: number) {
-  const prefix = `INTECH-${year}-`
-  const rows = await db
-    .select({ code: warranty.code })
-    .from(warranty)
-    .where(like(warranty.code, `${prefix}%`))
-    .orderBy(desc(warranty.code))
-    .limit(1)
-
-  if (rows.length === 0) {
-    return `${prefix}0001`
-  }
-
-  const lastCode = rows[0].code
-  const parts = lastCode.split('-')
-  const numPart = parts[parts.length - 1]
-  const nextNum = parseInt(numPart, 10) + 1
-  const paddedNum = String(nextNum).padStart(4, '0')
-  return `${prefix}${paddedNum}`
+export async function getNextWarrantyCode() {
+  return `INT-${randomBytes(6).toString('hex').toUpperCase()}`
 }
 
 export async function createWarranty(data: NewWarrantyRecord) {
-  await db.insert(warranty).values(data)
-  return data
+  return db.transaction(async (tx) => {
+    await tx.insert(warranty).values(data)
+    const rows = await tx.select().from(warranty).where(eq(warranty.code, data.code)).limit(1)
+    return rows[0] ?? null
+  })
 }
 
+export async function updateWarranty(data: NewWarrantyRecord) {
+  const { id: _id, code, ...fields } = data
+  return db.transaction(async (tx) => {
+    await tx.update(warranty).set(fields).where(eq(warranty.code, code))
+    const rows = await tx.select().from(warranty).where(eq(warranty.code, code)).limit(1)
+    return rows[0] ?? null
+  })
+}
+
+export async function deleteWarranty(code: string) {
+  const [result] = await db.delete(warranty).where(eq(warranty.code, code))
+  return result.affectedRows > 0
+}
+
+export async function importWarrantyRecords(lines: ImportLine[], commit: boolean) {
+  return db.transaction(
+    async (tx) => {
+      // Lock the serial range while importing, so repeated/concurrent imports cannot duplicate it.
+      const query = tx.select({ serial: warranty.serial }).from(warranty)
+      const existing = commit ? await query.for('update') : await query
+      const { ready, ...plan } = planWarrantyImport(
+        lines,
+        existing.map((row) => row.serial),
+      )
+      if (!commit || plan.errorCount) return { ...plan, created: 0 }
+      if (ready.length) {
+        const records = await Promise.all(
+          ready.map(async (data) => ({ ...data, code: await getNextWarrantyCode() })),
+        )
+        await tx.insert(warranty).values(records)
+      }
+      return { ...plan, created: ready.length }
+    },
+    { isolationLevel: 'repeatable read' },
+  )
+}
+
+export async function getContactSubmissions() {
+  return db
+    .select()
+    .from(contactSubmissions)
+    .orderBy(desc(contactSubmissions.submittedAt))
+    .limit(500)
+}
+
+export async function updateContactSubmission(
+  id: number,
+  status: 'mới' | 'đang xử lý' | 'đã xử lý',
+) {
+  return db.transaction(async (tx) => {
+    await tx.update(contactSubmissions).set({ status }).where(eq(contactSubmissions.id, id))
+    const rows = await tx
+      .select()
+      .from(contactSubmissions)
+      .where(eq(contactSubmissions.id, id))
+      .limit(1)
+    return rows[0] ?? null
+  })
+}
+
+export async function deleteContactSubmission(id: number) {
+  const [result] = await db.delete(contactSubmissions).where(eq(contactSubmissions.id, id))
+  return result.affectedRows > 0
+}
+
+export async function getAdminCounts(permissions: readonly string[]) {
+  const counts: Record<string, number> = {}
+  const entries = [
+    ['products', products],
+    ['posts', posts],
+    ['services', services],
+    ['warranty', warranty],
+    ['contacts', contactSubmissions],
+  ] as const
+  await Promise.all(
+    entries.map(async ([name, table]) => {
+      if (!permissions.includes(`${name}:read`)) return
+      const rows = await db.select({ value: count() }).from(table)
+      counts[name] = rows[0].value
+    }),
+  )
+  return counts
+}

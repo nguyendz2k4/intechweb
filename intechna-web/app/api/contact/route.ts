@@ -1,61 +1,72 @@
-import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
-import { db } from '@/app/lib/db/index'
-import { contactSubmissions } from '@/app/lib/db/schema'
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+import {
+  ApiError,
+  apiErrorResponse,
+  assertAllowedKeys,
+  enforceRateLimit,
+  escapeHtml,
+  readJsonObject,
+  textField,
+} from '@/app/lib/api-security'
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const { name, phone, email, note } = body
-
-  if (!name?.trim() || !phone?.trim()) {
-    return NextResponse.json({ error: 'Thiếu họ tên hoặc số điện thoại' }, { status: 400 })
-  }
-
-  // 1. Lưu vào database
-  await db.insert(contactSubmissions).values({
-    name:  name.trim(),
-    phone: phone.trim(),
-    email: email?.trim() ?? '',
-    note:  note?.trim() ?? '',
-  })
-
-  // 2. Gửi email thông báo cho chủ (nếu đã cấu hình Resend)
-  if (resend && process.env.CONTACT_NOTIFY_EMAIL) {
-    await resend.emails.send({
-      from:    'Intech Website <onboarding@resend.dev>',
-      to:      process.env.CONTACT_NOTIFY_EMAIL,
-      replyTo: email || undefined,
-      subject: `[Intech] Yêu cầu tư vấn mới từ ${name} — ${phone}`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #0f172a;">Yêu cầu tư vấn mới</h2>
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-              <td style="padding: 10px; background: #f8fafc; font-weight: bold; width: 140px; border: 1px solid #e2e8f0;">Họ tên</td>
-              <td style="padding: 10px; border: 1px solid #e2e8f0;">${name}</td>
-            </tr>
-            <tr>
-              <td style="padding: 10px; background: #f8fafc; font-weight: bold; border: 1px solid #e2e8f0;">Điện thoại</td>
-              <td style="padding: 10px; border: 1px solid #e2e8f0;"><a href="tel:${phone}">${phone}</a></td>
-            </tr>
-            ${email ? `<tr>
-              <td style="padding: 10px; background: #f8fafc; font-weight: bold; border: 1px solid #e2e8f0;">Email</td>
-              <td style="padding: 10px; border: 1px solid #e2e8f0;"><a href="mailto:${email}">${email}</a></td>
-            </tr>` : ''}
-            ${note ? `<tr>
-              <td style="padding: 10px; background: #f8fafc; font-weight: bold; border: 1px solid #e2e8f0;">Nhu cầu</td>
-              <td style="padding: 10px; border: 1px solid #e2e8f0;">${note}</td>
-            </tr>` : ''}
-          </table>
-          <p style="color: #64748b; font-size: 13px; margin-top: 24px;">
-            Gửi tự động từ website intechna.vn
-          </p>
-        </div>
-      `,
+  if (process.env.CONTACT_ENABLED === 'false')
+    return apiErrorResponse(
+      new ApiError('Biểu mẫu liên hệ tạm thời chưa khả dụng. Vui lòng gọi hotline.', 503),
+    )
+  const blocked = await enforceRateLimit(request, 'public:contact', 5, 10 * 60 * 1000)
+  if (blocked) return blocked
+  try {
+    const body = await readJsonObject(request, 16 * 1024)
+    assertAllowedKeys(body, ['name', 'phone', 'email', 'note'])
+    const name = textField(body, 'name', { required: true, max: 120, pattern: /^[^\r\n]+$/ })
+    const phone = textField(body, 'phone', {
+      required: true,
+      min: 8,
+      max: 20,
+      pattern: /^[+\d\s().-]+$/,
     })
-  }
+    if (phone.replace(/\D/g, '').length < 8) throw new ApiError('Số điện thoại không hợp lệ.')
+    const email = textField(body, 'email', {
+      max: 254,
+      pattern: /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/,
+    })
+    const note = textField(body, 'note', { max: 3000 })
+    const { db } = await import('@/app/lib/db')
+    const { contactSubmissions } = await import('@/app/lib/db/schema')
+    await db.insert(contactSubmissions).values({ name, phone, email, note })
 
-  return NextResponse.json({ ok: true })
+    // Saved submissions are accepted even when optional email delivery fails.
+    // Only an event name enters logs; provider errors and customer data stay private.
+    if (process.env.RESEND_API_KEY && process.env.CONTACT_NOTIFY_EMAIL) {
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY)
+        const fields = [
+          ['Họ tên', name],
+          ['Điện thoại', phone],
+          ['Email', email],
+          ['Nhu cầu', note],
+        ]
+        const result = await resend.emails.send({
+          from: process.env.CONTACT_FROM_EMAIL || 'Intech Website <onboarding@resend.dev>',
+          to: process.env.CONTACT_NOTIFY_EMAIL,
+          replyTo: email || undefined,
+          subject: '[Intech] Yêu cầu tư vấn mới',
+          html: `<div style="font-family:sans-serif;max-width:600px"><h2>Yêu cầu tư vấn mới</h2><table>${fields
+            .filter(([, value]) => value)
+            .map(
+              ([label, value]) =>
+                `<tr><th style="text-align:left;padding:10px">${label}</th><td style="padding:10px;white-space:pre-wrap">${escapeHtml(value)}</td></tr>`,
+            )
+            .join('')}</table><p>Gửi tự động từ website Intech.</p></div>`,
+        })
+        if (result.error) console.warn('contact.notification_failed')
+      } catch {
+        console.warn('contact.notification_failed')
+      }
+    }
+    return Response.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } })
+  } catch (error) {
+    return apiErrorResponse(error)
+  }
 }

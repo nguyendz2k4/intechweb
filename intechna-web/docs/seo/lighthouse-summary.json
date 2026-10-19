@@ -1,0 +1,93 @@
+[
+  {
+    "scenario": "home-mobile",
+    "url": "http://127.0.0.1:3000/",
+    "measuredAt": "2026-10-12T23:59:43.539Z",
+    "lighthouseVersion": "13.5.0",
+    "performance": 91,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 100,
+    "lcp": "3.2 s",
+    "cls": "0",
+    "tbt": "110 ms"
+  },
+  {
+    "scenario": "home-desktop",
+    "url": "http://127.0.0.1:3000/",
+    "measuredAt": "2026-10-13T00:00:02.295Z",
+    "lighthouseVersion": "13.5.0",
+    "performance": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 100,
+    "lcp": "0.7 s",
+    "cls": "0",
+    "tbt": "0 ms"
+  },
+  {
+    "scenario": "catalog-mobile",
+    "url": "http://127.0.0.1:3000/san-pham/catalog",
+    "measuredAt": "2026-10-13T00:00:21.024Z",
+    "lighthouseVersion": "13.5.0",
+    "performance": 97,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 100,
+    "lcp": "2.0 s",
+    "cls": "0",
+    "tbt": "90 ms"
+  },
+  {
+    "scenario": "category-mobile",
+    "url": "http://127.0.0.1:3000/san-pham/switch",
+    "measuredAt": "2026-10-13T00:08:16.715Z",
+    "lighthouseVersion": "13.5.0",
+    "performance": 91,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 100,
+    "lcp": "2.5 s",
+    "cls": "0",
+    "tbt": "160 ms"
+  },
+  {
+    "scenario": "product-mobile",
+    "url": "http://127.0.0.1:3000/san-pham/catalog/cisco-cbs110-8t-d",
+    "measuredAt": "2026-10-13T00:08:41.741Z",
+    "lighthouseVersion": "13.5.0",
+    "performance": 97,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 100,
+    "lcp": "2.2 s",
+    "cls": "0",
+    "tbt": "160 ms"
+  },
+  {
+    "scenario": "article-mobile",
+    "url": "http://127.0.0.1:3000/tin-tuc/checklist-trien-khai-mang-lan-van-phong",
+    "measuredAt": "2026-10-13T00:01:35.180Z",
+    "lighthouseVersion": "13.5.0",
+    "performance": 97,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 100,
+    "lcp": "2.4 s",
+    "cls": "0",
+    "tbt": "90 ms"
+  },
+  {
+    "scenario": "brand-mobile",
+    "url": "http://127.0.0.1:3000/thuong-hieu/cisco",
+    "measuredAt": "2026-10-13T00:01:54.684Z",
+    "lighthouseVersion": "13.5.0",
+    "performance": 89,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 100,
+    "lcp": "2.4 s",
+    "cls": "0",
+    "tbt": "110 ms"
+  }
+]

@@ -1,21 +1,6 @@
-import type { Metadata } from 'next'
-import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { siteConfig } from './data'
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-sans',
-  display: 'swap',
-})
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-mono',
-  display: 'swap',
-})
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.domain),
@@ -24,7 +9,13 @@ export const metadata: Metadata = {
     template: '%s | Intech',
   },
   description: siteConfig.description,
-  keywords: ['thi công mạng LAN WAN Nghệ An', 'thiết bị mạng Nghệ An', 'firewall doanh nghiệp', 'wifi doanh nghiệp', 'bảo trì hệ thống mạng'],
+  keywords: [
+    'thi công mạng LAN WAN Nghệ An',
+    'thiết bị mạng Nghệ An',
+    'firewall doanh nghiệp',
+    'wifi doanh nghiệp',
+    'bảo trì hệ thống mạng',
+  ],
   openGraph: {
     type: 'website',
     locale: 'vi_VN',
@@ -32,43 +23,46 @@ export const metadata: Metadata = {
     siteName: siteConfig.shortName,
     title: 'Intech | Giải pháp hạ tầng mạng doanh nghiệp',
     description: siteConfig.description,
+    images: [
+      {
+        url: '/images/hardware/infrastructure.webp',
+        width: 1536,
+        height: 1024,
+        alt: 'Intech — Giải pháp hạ tầng mạng doanh nghiệp',
+      },
+    ],
   },
-  alternates: { canonical: '/' },
-  icons: { icon: '/favicon.svg' },
-  robots: { index: true, follow: true },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Intech | Giải pháp hạ tầng mạng doanh nghiệp',
+    description: siteConfig.description,
+    images: ['/images/hardware/infrastructure.webp'],
+  },
+  icons: {
+    icon: [
+      { url: '/favicon-48.png?v=intech-gold-3', type: 'image/png', sizes: '48x48' },
+      { url: '/favicon.svg?v=intech-gold-3', type: 'image/svg+xml', sizes: 'any' },
+    ],
+    shortcut: '/favicon.ico?v=intech-gold-3',
+    apple: [{ url: '/apple-touch-icon.png?v=intech-gold-3', sizes: '180x180', type: 'image/png' }],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
+  },
 }
 
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': ['Organization', 'LocalBusiness', 'ProfessionalService'],
-  name: siteConfig.name,
-  url: siteConfig.domain,
-  telephone: siteConfig.phone,
-  email: siteConfig.email,
-  address: {
-    '@type': 'PostalAddress',
-    streetAddress: 'Số 31, ngõ 20, đường Nguyễn Đức Cảnh',
-    addressLocality: 'Thành Vinh',
-    addressRegion: 'Nghệ An',
-    addressCountry: 'VN',
-  },
-  areaServed: 'Nghệ An, Việt Nam',
-  serviceType: ['Thi công mạng LAN/WAN', 'Cung cấp thiết bị mạng', 'Triển khai firewall', 'WiFi doanh nghiệp', 'Bảo trì hệ thống mạng'],
-  contactPoint: [{ '@type': 'ContactPoint', telephone: siteConfig.phone, email: siteConfig.email, contactType: 'sales', areaServed: 'VN', availableLanguage: ['vi'] }],
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#e7f0f7',
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="vi"
-      data-scroll-behavior="smooth"
-      className={`${plusJakartaSans.variable} ${jetbrainsMono.variable}`}
-      suppressHydrationWarning
-    >
-      <body>
-        {children}
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      </body>
+    <html lang="vi" data-scroll-behavior="smooth">
+      <body>{children}</body>
     </html>
   )
 }
